@@ -1,0 +1,21 @@
+{
+  "name": "udagram-api-feed",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "fastify": "^5.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "tsx": "^4.21.0"
+  },
+  "keywords": [],
+  "author": "J. A. Cutabiala <jandiralceu@gmail.com>",
+  "license": "ISC",
+  "type": "module"
+}
