@@ -1,18 +1,32 @@
-// Import the framework and instantiate it
 import Fastify from 'fastify'
+
+import fastifyEnv from '@fastify/env'
+import schema, { type EnvConfig } from './config/env.js'
+
 const fastify = Fastify({
   logger: true,
 })
 
-// Declare a route
-fastify.get('/health', async function handler(request, reply) {
+declare module 'fastify' {
+  interface FastifyInstance {
+    config: EnvConfig
+  }
+}
+
+await fastify.register(fastifyEnv, {
+  schema,
+  dotenv: true,
+})
+
+fastify.get('/health', async function handler(_request, _reply) {
   return { status: 'ok' }
 })
 
-// Run the server!
-try {
-  await fastify.listen({ port: 5100 })
-} catch (err) {
-  fastify.log.error(err)
-  process.exit(1)
-}
+fastify.listen({ port: fastify.config.PORT }, (err, address) => {
+  if (err) {
+    fastify.log.error(err)
+    process.exit(1)
+  }
+
+  console.log(`Server listening at ${address}`)
+})
