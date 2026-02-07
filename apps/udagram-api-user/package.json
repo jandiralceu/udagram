@@ -9,6 +9,7 @@
   "dependencies": {
     "@fastify/env": "^5.0.3",
     "@fastify/postgres": "^6.0.2",
+    "@udagram/fastify-dynamo-plugin": "^1.0.0",
     "fastify": "^5.7.4",
     "pg": "^8.18.0"
   },

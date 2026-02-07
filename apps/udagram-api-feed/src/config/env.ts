@@ -2,7 +2,7 @@ const schema = {
   type: 'object',
   required: ['DB_CONNECTION_STRING'],
   properties: {
-    APP_NAME: { type: 'string', default: 'Udagram Feed Service' },
+    APP_NAME: { type: 'string', default: 'udagram-feed-api' },
     PORT: { type: 'number', default: 8080 },
     DB_CONNECTION_STRING: { type: 'string' },
   },
