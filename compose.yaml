@@ -1,0 +1,26 @@
+name: udagram-monorepo
+
+services:
+  postgres:
+    image: postgres:alpine
+    restart: always
+    ports:
+      - '5455:5432'
+    environment:
+      POSTGRES_USER: johndoe
+      POSTGRES_PASSWORD: qNP5Ja1ZDUG7k525
+      POSTGRES_DB: udagram_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    restart: always
+    ports:
+      - '5434:8000'
+    # Run in memory
+    command: '-jar DynamoDBLocal.jar -inMemory -sharedDb'
+    working_dir: /home/dynamodblocal
+
+volumes:
+  postgres_data:

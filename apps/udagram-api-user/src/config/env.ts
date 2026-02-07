@@ -1,13 +1,17 @@
 const schema = {
   type: 'object',
-  required: ['PORT'],
+  required: ['DB_CONNECTION_STRING'],
   properties: {
-    PORT: { type: 'number', default: 5200 },
+    APP_NAME: { type: 'string', default: 'Udagram User Service' },
+    PORT: { type: 'number', default: 8080 },
+    DB_CONNECTION_STRING: { type: 'string' },
   },
 } as const
 
 export interface EnvConfig {
+  APP_NAME: string
   PORT: number
+  DB_CONNECTION_STRING: string
 }
 
 export default schema
