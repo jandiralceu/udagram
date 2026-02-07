@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: johndoe
       POSTGRES_PASSWORD: qNP5Ja1ZDUG7k525
-      POSTGRES_DB: udagram_db
+      POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

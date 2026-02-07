@@ -1,7 +1,6 @@
 import Fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 import fastifyI18n from 'fastify-i18n'
-import fastifyPostgres from '@fastify/postgres'
 
 import logger from '@udagram/logger-config'
 
@@ -32,20 +31,8 @@ await fastify.register(fastifyI18n, {
   messages,
 })
 
-// Register the postgres plugin
-await fastify.register(fastifyPostgres, {
-  connectionString: fastify.config.DB_CONNECTION_STRING,
-})
-
 fastify.get('/health', async function handler(_request, _reply) {
-  try {
-    const client = await fastify.pg.connect()
-    client.release()
-    return { app: fastify.config.APP_NAME, database: true }
-  } catch (error) {
-    fastify.log.error(error)
-    return { app: fastify.config.APP_NAME, database: false }
-  }
+  return { app: fastify.config.APP_NAME, database: false }
 })
 
 fastify.listen(

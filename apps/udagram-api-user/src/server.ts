@@ -1,6 +1,5 @@
 import Fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
-import fastifyPostgres from '@fastify/postgres'
 import fastifyI18n from 'fastify-i18n'
 import { ListTablesCommand } from '@aws-sdk/client-dynamodb'
 
@@ -9,6 +8,8 @@ import logger from '@udagram/logger-config'
 
 import schema, { type EnvConfig } from './config/env.js'
 import messages from './config/i18n.js'
+import authRoutes from './routes/v1/auth.js'
+import usersRoutes from './routes/v1/users.js'
 
 const env = process.env.NODE_ENV || 'development'
 
@@ -34,11 +35,6 @@ await fastify.register(fastifyI18n, {
   messages,
 })
 
-// Register the postgres plugin
-await fastify.register(fastifyPostgres, {
-  connectionString: fastify.config.DB_CONNECTION_STRING,
-})
-
 // Register the dynamo plugin
 await fastify.register(dynamoPlugin, {
   endpoint: fastify.config.DYNAMO_DB_ENDPOINT,
@@ -50,16 +46,7 @@ await fastify.register(dynamoPlugin, {
 })
 
 fastify.get('/health', async function handler(_, __) {
-  let pgStatus = false
   let dynamoStatus = false
-
-  try {
-    const client = await fastify.pg.connect()
-    client.release()
-    pgStatus = true
-  } catch (error) {
-    fastify.log.error(error)
-  }
 
   try {
     await fastify.dynamo.client.send(new ListTablesCommand({}))
@@ -71,11 +58,13 @@ fastify.get('/health', async function handler(_, __) {
   return {
     app: fastify.config.APP_NAME,
     components: {
-      postgres: pgStatus,
       dynamodb: dynamoStatus,
     },
   }
 })
+
+fastify.register(authRoutes, { prefix: '/api/v1/auth' })
+fastify.register(usersRoutes, { prefix: '/api/v1/users' })
 
 fastify.listen(
   { port: fastify.config.PORT, host: '0.0.0.0.' },

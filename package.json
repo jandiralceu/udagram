@@ -14,6 +14,8 @@
     "docker:build:frontend": "docker build -f apps/udagram-frontend/Dockerfile -t jandir/udagram-frontend .",
     "docker:build:api-user": "docker build -f apps/udagram-api-user/Dockerfile -t jandir/udagram-api-user .",
     "docker:build:api-feed": "docker build -f apps/udagram-api-feed/Dockerfile -t jandir/udagram-api-feed .",
+    "db:generate:user": "npm run db:generate --workspace=apps/udagram-api-user --",
+    "db:migrate:user": "npm run db:migrate -w apps/udagram-api-user",
     "prepare": "husky"
   },
   "devDependencies": {
