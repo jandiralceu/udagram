@@ -1,13 +1,17 @@
 import Fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 import fastifyPostgres from '@fastify/postgres'
-import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
 import { ListTablesCommand } from '@aws-sdk/client-dynamodb'
+
+import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
+import logger from '@udagram/logger-config'
 
 import schema, { type EnvConfig } from './config/env.js'
 
+const env = process.env.NODE_ENV || 'development'
+
 const fastify = Fastify({
-  logger: true,
+  logger: logger[env as keyof typeof logger],
 })
 
 declare module 'fastify' {
