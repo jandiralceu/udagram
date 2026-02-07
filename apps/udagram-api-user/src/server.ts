@@ -69,11 +69,14 @@ fastify.get('/health', async function handler(_, __) {
   }
 })
 
-fastify.listen({ port: fastify.config.PORT }, (err, address) => {
-  if (err) {
-    fastify.log.error(err)
-    process.exit(1)
-  }
+fastify.listen(
+  { port: fastify.config.PORT, host: '0.0.0.0.' },
+  (err, address) => {
+    if (err) {
+      fastify.log.error(err)
+      process.exit(1)
+    }
 
-  console.log(`Server listening at ${address}`)
-})
+    console.log(`Server listening at ${address}`)
+  }
+)

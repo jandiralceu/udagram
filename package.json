@@ -12,6 +12,8 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "docker:build:frontend": "docker build -f apps/udagram-frontend/Dockerfile -t jandir/udagram-frontend .",
+    "docker:build:api-user": "docker build -f apps/udagram-api-user/Dockerfile -t jandir/udagram-api-user .",
+    "docker:build:api-feed": "docker build -f apps/udagram-api-feed/Dockerfile -t jandir/udagram-api-feed .",
     "prepare": "husky"
   },
   "devDependencies": {
