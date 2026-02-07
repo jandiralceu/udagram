@@ -4,8 +4,10 @@ const logger = {
       target: 'pino-pretty',
       options: {
         colorize: true,
-        ignore: 'hostname',
+        levelFirst: true,
+        ignore: 'pid,hostname',
         translateTime: 'SYS:dd-mm-yyyy HH:MM:ss',
+        singleLine: true,
       },
     },
   },

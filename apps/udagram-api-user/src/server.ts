@@ -1,12 +1,14 @@
 import Fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 import fastifyPostgres from '@fastify/postgres'
+import fastifyI18n from 'fastify-i18n'
 import { ListTablesCommand } from '@aws-sdk/client-dynamodb'
 
 import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
 import logger from '@udagram/logger-config'
 
 import schema, { type EnvConfig } from './config/env.js'
+import messages from './config/i18n.js'
 
 const env = process.env.NODE_ENV || 'development'
 
@@ -24,6 +26,12 @@ declare module 'fastify' {
 await fastify.register(fastifyEnv, {
   schema,
   dotenv: true,
+})
+
+// Register the i18n plugin
+await fastify.register(fastifyI18n, {
+  fallbackLocale: 'en',
+  messages,
 })
 
 // Register the postgres plugin

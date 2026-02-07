@@ -13,6 +13,7 @@
     "@udagram/fastify-dynamo-plugin": "^1.0.0",
     "@udagram/logger-config": "^1.0.0",
     "fastify": "^5.7.4",
+    "fastify-i18n": "^3.0.0",
     "pg": "^8.18.0"
   },
   "devDependencies": {
