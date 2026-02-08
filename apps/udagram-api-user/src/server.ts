@@ -1,6 +1,19 @@
 import Fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import fastifyJwt from '@fastify/jwt'
 import fastifyI18n from 'fastify-i18n'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+import {
+  serializerCompiler,
+  validatorCompiler,
+  type ZodTypeProvider,
+} from 'fastify-type-provider-zod'
 import { ListTablesCommand } from '@aws-sdk/client-dynamodb'
 
 import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
@@ -8,6 +21,7 @@ import logger from '@udagram/logger-config'
 
 import schema, { type EnvConfig } from './config/env.js'
 import messages from './config/i18n.js'
+
 import authRoutes from './routes/v1/auth.js'
 import usersRoutes from './routes/v1/users.js'
 
@@ -15,7 +29,7 @@ const env = process.env.NODE_ENV || 'development'
 
 const fastify = Fastify({
   logger: logger[env as keyof typeof logger],
-})
+}).withTypeProvider<ZodTypeProvider>()
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -35,6 +49,21 @@ await fastify.register(fastifyI18n, {
   messages,
 })
 
+// Register JWT plugin
+await fastify.register(fastifyJwt, {
+  secret: {
+    private: fs.readFileSync(
+      path.join(__dirname, '../../../private.pem'),
+      'utf8'
+    ),
+    public: fs.readFileSync(
+      path.join(__dirname, '../../../public.pem'),
+      'utf8'
+    ),
+  },
+  sign: { algorithm: 'RS256' },
+})
+
 // Register the dynamo plugin
 await fastify.register(dynamoPlugin, {
   endpoint: fastify.config.DYNAMO_DB_ENDPOINT,
@@ -44,6 +73,9 @@ await fastify.register(dynamoPlugin, {
     secretAccessKey: 'test',
   },
 })
+
+fastify.setValidatorCompiler(validatorCompiler)
+fastify.setSerializerCompiler(serializerCompiler)
 
 fastify.get('/health', async function handler(_, __) {
   let dynamoStatus = false

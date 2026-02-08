@@ -1,18 +1,31 @@
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import type { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { LoginSchema, SignupSchema } from '../../schemas/auth.schema.js'
+import * as authController from '../../controllers/auth.controller.js'
 
 export default async function authRoutes(
   fastify: FastifyInstance,
   _opts: FastifyPluginOptions
 ) {
-  fastify.post('/signup', async (_request, _reply) => {
-    return { message: 'Register' }
-  })
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
 
-  fastify.post('/signin', async (_request, _reply) => {
-    return { message: 'Login' }
-  })
+  app.post(
+    '/signup',
+    {
+      schema: {
+        body: SignupSchema,
+      },
+    },
+    authController.signup
+  )
 
-  fastify.post('/signout', async (_request, _reply) => {
-    return { message: 'Signout' }
-  })
+  app.post(
+    '/signin',
+    {
+      schema: {
+        body: LoginSchema,
+      },
+    },
+    authController.signin
+  )
 }

@@ -1,18 +1,39 @@
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import type { ZodTypeProvider } from 'fastify-type-provider-zod'
+import * as usersController from '../../controllers/users.controller.js'
+import {
+  UpdateUserBodySchema,
+  UpdateUserParamsSchema,
+} from '../../schemas/users.schema.js'
 
-export default async function authRoutes(
+export default async function usersRoutes(
   fastify: FastifyInstance,
   _opts: FastifyPluginOptions
 ) {
-  fastify.get('/me', async (_request, _reply) => {
-    return { message: 'Profile' }
-  })
+  const app = fastify.withTypeProvider<ZodTypeProvider>()
 
-  fastify.get('/:userId', async (_request, _reply) => {
-    return { message: 'Login' }
-  })
+  app.get('/me', usersController.getProfile)
 
-  fastify.delete('', async (_request, _reply) => {
-    return { message: 'Signout' }
-  })
+  app.get(
+    '/:userId',
+    {
+      schema: {
+        params: UpdateUserParamsSchema,
+      },
+    },
+    usersController.getById
+  )
+
+  app.patch(
+    '/:userId',
+    {
+      schema: {
+        params: UpdateUserParamsSchema,
+        body: UpdateUserBodySchema,
+      },
+    },
+    usersController.update
+  )
+
+  app.delete('', usersController.remove)
 }
