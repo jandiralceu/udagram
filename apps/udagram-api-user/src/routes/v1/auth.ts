@@ -1,6 +1,10 @@
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
-import { LoginSchema, SignupSchema } from '../../schemas/auth.schema.js'
+import {
+  LoginSchema,
+  RefreshTokenSchema,
+  SignupSchema,
+} from '../../schemas/auth.schema.js'
 import * as authController from '../../controllers/auth.controller.js'
 
 export default async function authRoutes(
@@ -27,5 +31,15 @@ export default async function authRoutes(
       },
     },
     authController.signin
+  )
+
+  app.post(
+    '/refresh',
+    {
+      schema: {
+        body: RefreshTokenSchema,
+      },
+    },
+    authController.refresh
   )
 }

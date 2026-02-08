@@ -1,5 +1,6 @@
 const logger = {
   development: {
+    level: 'debug',
     transport: {
       target: 'pino-pretty',
       options: {

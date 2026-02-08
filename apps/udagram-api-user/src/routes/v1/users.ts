@@ -12,6 +12,8 @@ export default async function usersRoutes(
 ) {
   const app = fastify.withTypeProvider<ZodTypeProvider>()
 
+  fastify.addHook('onRequest', fastify.authenticate)
+
   app.get('/me', usersController.getProfile)
 
   app.get(
@@ -25,10 +27,9 @@ export default async function usersRoutes(
   )
 
   app.patch(
-    '/:userId',
+    '',
     {
       schema: {
-        params: UpdateUserParamsSchema,
         body: UpdateUserBodySchema,
       },
     },

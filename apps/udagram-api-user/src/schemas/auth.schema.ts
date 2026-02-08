@@ -19,3 +19,9 @@ export const SignupSchema = z
 
 export type LoginDTO = z.infer<typeof LoginSchema>
 export type SignupDTO = z.infer<typeof SignupSchema>
+
+export const RefreshTokenSchema = z.object({
+  refreshToken: z.string(),
+})
+
+export type RefreshTokenDTO = z.infer<typeof RefreshTokenSchema>

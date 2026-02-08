@@ -7,6 +7,13 @@ import type { UpdateUserBody } from '../schemas/users.schema.js'
 export const getUserById = async (userId: string) => {
   const user = await db.query.usersTable.findFirst({
     where: eq(usersTable.id, userId),
+    columns: {
+      id: true,
+      name: true,
+      email: true,
+      created_at: true,
+      updated_at: true,
+    },
   })
   return user
 }
@@ -35,7 +42,13 @@ export const create = async (userData: CreateUserDTO) => {
       ...userData,
       password: hashedPassword,
     })
-    .returning()
+    .returning({
+      id: usersTable.id,
+      name: usersTable.name,
+      email: usersTable.email,
+      created_at: usersTable.created_at,
+      updated_at: usersTable.updated_at,
+    })
 
   return newUser
 }
@@ -58,7 +71,13 @@ export const updateUser = async (userId: string, data: UpdateUserBody) => {
     .update(usersTable)
     .set(updatePayload)
     .where(eq(usersTable.id, userId))
-    .returning()
+    .returning({
+      id: usersTable.id,
+      name: usersTable.name,
+      email: usersTable.email,
+      created_at: usersTable.created_at,
+      updated_at: usersTable.updated_at,
+    })
 
   return updatedUser
 }

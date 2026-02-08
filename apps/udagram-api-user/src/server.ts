@@ -1,14 +1,10 @@
-import Fastify from 'fastify'
+import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv from '@fastify/env'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fastifyJwt from '@fastify/jwt'
 import fastifyI18n from 'fastify-i18n'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
 import {
   serializerCompiler,
   validatorCompiler,
@@ -19,11 +15,15 @@ import { ListTablesCommand } from '@aws-sdk/client-dynamodb'
 import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
 import logger from '@udagram/logger-config'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 import schema, { type EnvConfig } from './config/env.js'
 import messages from './config/i18n.js'
 
 import authRoutes from './routes/v1/auth.js'
 import usersRoutes from './routes/v1/users.js'
+// import { ensureTableExists } from './services/dynamo.service.js'
 
 const env = process.env.NODE_ENV || 'development'
 
@@ -34,6 +34,10 @@ const fastify = Fastify({
 declare module 'fastify' {
   interface FastifyInstance {
     config: EnvConfig
+    authenticate: (
+      request: FastifyRequest,
+      reply: FastifyReply
+    ) => Promise<void>
   }
 }
 
@@ -64,6 +68,17 @@ await fastify.register(fastifyJwt, {
   sign: { algorithm: 'RS256' },
 })
 
+fastify.decorate(
+  'authenticate',
+  async function (request: FastifyRequest, reply: FastifyReply) {
+    try {
+      await request.jwtVerify()
+    } catch (err) {
+      reply.send(err)
+    }
+  }
+)
+
 // Register the dynamo plugin
 await fastify.register(dynamoPlugin, {
   endpoint: fastify.config.DYNAMO_DB_ENDPOINT,
@@ -73,6 +88,12 @@ await fastify.register(dynamoPlugin, {
     secretAccessKey: 'test',
   },
 })
+
+// Ensure DynamoDB tables exist
+// await ensureTableExists(
+//   fastify.dynamo.doc,
+//   process.env.DYNAMO_TABLE_NAME || 'RefreshTokens'
+// )
 
 fastify.setValidatorCompiler(validatorCompiler)
 fastify.setSerializerCompiler(serializerCompiler)
