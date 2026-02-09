@@ -11,6 +11,7 @@ export const getUserById = async (userId: string) => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       created_at: true,
       updated_at: true,
     },
@@ -46,6 +47,7 @@ export const create = async (userData: CreateUserDTO) => {
       id: usersTable.id,
       name: usersTable.name,
       email: usersTable.email,
+      avatar: usersTable.avatar,
       created_at: usersTable.created_at,
       updated_at: usersTable.updated_at,
     })
@@ -75,6 +77,7 @@ export const updateUser = async (userId: string, data: UpdateUserBody) => {
       id: usersTable.id,
       name: usersTable.name,
       email: usersTable.email,
+      avatar: usersTable.avatar,
       created_at: usersTable.created_at,
       updated_at: usersTable.updated_at,
     })

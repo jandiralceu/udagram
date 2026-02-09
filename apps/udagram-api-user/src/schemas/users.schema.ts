@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
 export const GetUserParamsSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.uuid(),
 })
 
 export const UpdateUserParamsSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.uuid(),
 })
 
 export const UpdateUserBodySchema = z

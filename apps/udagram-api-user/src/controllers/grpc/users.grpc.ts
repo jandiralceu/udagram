@@ -14,7 +14,7 @@ const usersGrpcController = (router: ConnectRouter) => {
       return {
         id: user.id,
         name: user.name,
-        avatarUrl: 'placeholder',
+        ...(user.avatar ? { avatarUrl: user.avatar } : {}),
       }
     },
   })

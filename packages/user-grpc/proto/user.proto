@@ -9,7 +9,7 @@ message GetUserByIdRequest {
 message GetUserByIdResponse {
   string id = 1;
   string name = 2;
-  string avatar_url = 3;
+  optional string avatar_url = 3;
 }
 
 service UserService {

@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file user.proto.
  */
 export const file_user: GenFile = /*@__PURE__*/
-  fileDesc("Cgp1c2VyLnByb3RvEgR1c2VyIiAKEkdldFVzZXJCeUlkUmVxdWVzdBIKCgJpZBgBIAEoCSJDChNHZXRVc2VyQnlJZFJlc3BvbnNlEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKYXZhdGFyX3VybBgDIAEoCTJRCgtVc2VyU2VydmljZRJCCgtHZXRVc2VyQnlJZBIYLnVzZXIuR2V0VXNlckJ5SWRSZXF1ZXN0GhkudXNlci5HZXRVc2VyQnlJZFJlc3BvbnNlYgZwcm90bzM");
+  fileDesc("Cgp1c2VyLnByb3RvEgR1c2VyIiAKEkdldFVzZXJCeUlkUmVxdWVzdBIKCgJpZBgBIAEoCSJXChNHZXRVc2VyQnlJZFJlc3BvbnNlEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSFwoKYXZhdGFyX3VybBgDIAEoCUgAiAEBQg0KC19hdmF0YXJfdXJsMlEKC1VzZXJTZXJ2aWNlEkIKC0dldFVzZXJCeUlkEhgudXNlci5HZXRVc2VyQnlJZFJlcXVlc3QaGS51c2VyLkdldFVzZXJCeUlkUmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message user.GetUserByIdRequest
@@ -44,9 +44,9 @@ export type GetUserByIdResponse = Message<"user.GetUserByIdResponse"> & {
   name: string;
 
   /**
-   * @generated from field: string avatar_url = 3;
+   * @generated from field: optional string avatar_url = 3;
    */
-  avatarUrl: string;
+  avatarUrl?: string;
 };
 
 /**
