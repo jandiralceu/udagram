@@ -1,0 +1,205 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  REGISTRY: docker.io
+  IMAGE_PREFIX: jandir
+
+jobs:
+  changes:
+    name: 🔎 Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      api-user: ${{ steps.filter.outputs.api-user }}
+      api-feed: ${{ steps.filter.outputs.api-feed }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            api-user:
+              - 'apps/udagram-api-user/**'
+              - 'packages/user-grpc/**'
+              - 'packages/logger-config/**'
+              - 'packages/fastify-dynamo-plugin/**'
+            api-feed:
+              - 'apps/udagram-api-feed/**'
+              - 'packages/user-grpc/**'
+              - 'packages/logger-config/**'
+            frontend:
+              - 'apps/udagram-frontend/**'
+
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    needs: [changes]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npx turbo run build
+
+  docker-api-user:
+    name: 🐳 Build & Push API User
+    runs-on: ubuntu-latest
+    needs: [build, changes]
+    if: needs.changes.outputs.api-user == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/udagram-api-user
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/udagram-api-user/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  docker-api-feed:
+    name: 🐳 Build & Push API Feed
+    runs-on: ubuntu-latest
+    needs: [build, changes]
+    if: needs.changes.outputs.api-feed == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/udagram-api-feed
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/udagram-api-feed/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  docker-frontend:
+    name: 🐳 Build & Push Frontend
+    runs-on: ubuntu-latest
+    needs: [build, changes]
+    if: needs.changes.outputs.frontend == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/udagram-frontend
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/udagram-frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # deploy:
+  #   name: 🚀 Deploy to Kubernetes
+  #   runs-on: ubuntu-latest
+  #   needs: [docker-api-user, docker-api-feed, docker-frontend]
+  #   if: always() && !failure() && !cancelled()
+  #   environment: production
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Configure kubectl
+  #       uses: azure/setup-kubectl@v4
+  #
+  #     - name: Set Kubernetes context
+  #       uses: azure/k8s-set-context@v4
+  #       with:
+  #         kubeconfig: ${{ secrets.KUBE_CONFIG }}
+  #
+  #     - name: Deploy to cluster
+  #       run: |
+  #         kubectl apply -f k8s/
+  #         kubectl rollout restart deployment/udagram-api-user
+  #         kubectl rollout restart deployment/udagram-api-feed
+  #         kubectl rollout restart deployment/udagram-frontend
