@@ -23,7 +23,6 @@ import messages from './config/i18n.js'
 
 import authRoutes from './routes/v1/auth.js'
 import usersRoutes from './routes/v1/users.js'
-// import { ensureTableExists } from './services/dynamo.service.js'
 
 const env = process.env.NODE_ENV || 'development'
 
@@ -88,12 +87,6 @@ await fastify.register(dynamoPlugin, {
     secretAccessKey: 'test',
   },
 })
-
-// Ensure DynamoDB tables exist
-// await ensureTableExists(
-//   fastify.dynamo.doc,
-//   process.env.DYNAMO_TABLE_NAME || 'RefreshTokens'
-// )
 
 fastify.setValidatorCompiler(validatorCompiler)
 fastify.setSerializerCompiler(serializerCompiler)

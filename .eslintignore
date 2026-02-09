@@ -13,3 +13,7 @@ generated
 # Logs
 *.log
 
+# Generated code
+src/gen
+
+
