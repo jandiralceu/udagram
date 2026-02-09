@@ -16,6 +16,8 @@
     "docker:build:api-feed": "docker build -f apps/udagram-api-feed/Dockerfile -t jandir/udagram-api-feed .",
     "db:generate:user": "npm run db:generate --workspace=apps/udagram-api-user --",
     "db:migrate:user": "npm run db:migrate -w apps/udagram-api-user",
+    "db:generate:feed": "npm run db:generate --workspace=apps/udagram-api-feed --",
+    "db:migrate:feed": "npm run db:migrate -w apps/udagram-api-feed",
     "prepare": "husky"
   },
   "devDependencies": {

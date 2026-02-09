@@ -1,21 +1,33 @@
-import Fastify from 'fastify'
-import fastifyEnv from '@fastify/env'
+import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
+import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import fastifyI18n from 'fastify-i18n'
+import fastifyJwt from '@fastify/jwt'
+import type { ZodTypeProvider } from 'fastify-type-provider-zod'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import logger from '@udagram/logger-config'
 
 import schema, { type EnvConfig } from './config/env.js'
 import messages from './config/i18n.js'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 const env = process.env.NODE_ENV || 'development'
 
 const fastify = Fastify({
   logger: logger[env as keyof typeof logger],
-})
+}).withTypeProvider<ZodTypeProvider>()
 
 declare module 'fastify' {
   interface FastifyInstance {
     config: EnvConfig
+    authenticate: (
+      request: FastifyRequest,
+      reply: FastifyReply
+    ) => Promise<void>
   }
 }
 
@@ -23,7 +35,7 @@ declare module 'fastify' {
 await fastify.register(fastifyEnv, {
   schema,
   dotenv: true,
-})
+} as FastifyEnvOptions)
 
 // Register the i18n plugin
 await fastify.register(fastifyI18n, {
@@ -31,8 +43,30 @@ await fastify.register(fastifyI18n, {
   messages,
 })
 
+// Register JWT plugin
+await fastify.register(fastifyJwt, {
+  secret: {
+    public: fs.readFileSync(
+      path.join(__dirname, '../../../public.pem'),
+      'utf8'
+    ),
+  },
+  sign: { algorithm: 'RS256' },
+})
+
+fastify.decorate(
+  'authenticate',
+  async function (request: FastifyRequest, reply: FastifyReply) {
+    try {
+      await request.jwtVerify()
+    } catch (err) {
+      reply.send(err)
+    }
+  }
+)
+
 fastify.get('/health', async function handler(_request, _reply) {
-  return { app: fastify.config.APP_NAME, database: false }
+  return { app: fastify.config.APP_NAME }
 })
 
 fastify.listen(

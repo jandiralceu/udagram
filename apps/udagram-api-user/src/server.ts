@@ -10,7 +10,6 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
-import { ListTablesCommand } from '@aws-sdk/client-dynamodb'
 import { fastifyConnectPlugin } from '@connectrpc/connect-fastify'
 import grpcRoutes from './controllers/grpc/users.grpc.js'
 
@@ -94,20 +93,8 @@ fastify.setValidatorCompiler(validatorCompiler)
 fastify.setSerializerCompiler(serializerCompiler)
 
 fastify.get('/health', async function handler(_, __) {
-  let dynamoStatus = false
-
-  try {
-    await fastify.dynamo.client.send(new ListTablesCommand({}))
-    dynamoStatus = true
-  } catch (error) {
-    fastify.log.error(error)
-  }
-
   return {
     app: fastify.config.APP_NAME,
-    components: {
-      dynamodb: dynamoStatus,
-    },
   }
 })
 
