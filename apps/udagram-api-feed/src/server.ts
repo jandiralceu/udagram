@@ -1,8 +1,13 @@
+import 'dotenv/config'
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import fastifyI18n from 'fastify-i18n'
 import fastifyJwt from '@fastify/jwt'
-import type { ZodTypeProvider } from 'fastify-type-provider-zod'
+import {
+  serializerCompiler,
+  validatorCompiler,
+  type ZodTypeProvider,
+} from 'fastify-type-provider-zod'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -11,6 +16,7 @@ import logger from '@udagram/logger-config'
 
 import schema, { type EnvConfig } from './config/env.js'
 import messages from './config/i18n.js'
+import feedRoutes from './routes/v1/feed.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -65,9 +71,14 @@ fastify.decorate(
   }
 )
 
+fastify.setValidatorCompiler(validatorCompiler)
+fastify.setSerializerCompiler(serializerCompiler)
+
 fastify.get('/health', async function handler(_request, _reply) {
   return { app: fastify.config.APP_NAME }
 })
+
+fastify.register(feedRoutes, { prefix: '/api/v1/feeds' })
 
 fastify.listen(
   { port: fastify.config.PORT, host: '0.0.0.0' },
