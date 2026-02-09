@@ -1,8 +1,9 @@
 {
   "name": "@udagram/user-grpc",
   "version": "1.0.0",
-  "main": "dist/gen/index.js",
-  "types": "dist/gen/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "clean": "rm -rf dist",
     "gen": "buf generate --template buf.gen.yaml",
@@ -10,14 +11,13 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@bufbuild/buf": "^1.49.0",
-    "@bufbuild/protoc-gen-es": "^1.10.0",
-    "@connectrpc/protoc-gen-connect-es": "^1.6.0",
+    "@bufbuild/buf": "^1.65.0",
+    "@bufbuild/protoc-gen-es": "^2.11.0",
     "@types/node": "^22.13.1",
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^1.10.0",
-    "@connectrpc/connect": "^1.6.0"
+    "@bufbuild/protobuf": "^2.11.0",
+    "@connectrpc/connect": "^2.1.1"
   }
 }

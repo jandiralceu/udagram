@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
-import * as usersController from '../../controllers/users.controller.js'
+import * as usersController from '../../controllers/rest/users.controller.js'
 import {
   UpdateUserBodySchema,
   UpdateUserParamsSchema,

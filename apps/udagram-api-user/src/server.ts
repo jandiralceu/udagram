@@ -1,5 +1,5 @@
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
-import fastifyEnv from '@fastify/env'
+import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -11,6 +11,8 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
 import { ListTablesCommand } from '@aws-sdk/client-dynamodb'
+import { fastifyConnectPlugin } from '@connectrpc/connect-fastify'
+import grpcRoutes from './controllers/grpc/users.grpc.js'
 
 import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
 import logger from '@udagram/logger-config'
@@ -44,7 +46,7 @@ declare module 'fastify' {
 await fastify.register(fastifyEnv, {
   schema,
   dotenv: true,
-})
+} as FastifyEnvOptions)
 
 // Register the i18n plugin
 await fastify.register(fastifyI18n, {
@@ -111,6 +113,7 @@ fastify.get('/health', async function handler(_, __) {
 
 fastify.register(authRoutes, { prefix: '/api/v1/auth' })
 fastify.register(usersRoutes, { prefix: '/api/v1/users' })
+fastify.register(fastifyConnectPlugin, { routes: grpcRoutes })
 
 fastify.listen(
   { port: fastify.config.PORT, host: '0.0.0.0.' },

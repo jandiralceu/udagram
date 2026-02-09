@@ -1,13 +1,13 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
-import * as usersService from '../services/users.service.js'
-import { verifyPassword } from '../services/password.service.js'
-import * as dynamoService from '../services/dynamo.service.js'
+import * as usersService from '../../services/users.service.js'
+import { verifyPassword } from '../../services/password.service.js'
+import * as dynamoService from '../../services/dynamo.service.js'
 import type {
   LoginDTO,
   RefreshTokenDTO,
   SignupDTO,
-} from '../schemas/auth.schema.js'
+} from '../../schemas/auth.schema.js'
 
 export const signin = async (
   request: FastifyRequest<{ Body: LoginDTO }>,

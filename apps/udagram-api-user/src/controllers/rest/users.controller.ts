@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import * as usersService from '../services/users.service.js'
-import type { UpdateUserBody } from '../schemas/users.schema.js'
+import * as usersService from '../../services/users.service.js'
+import type { UpdateUserBody } from '../../schemas/users.schema.js'
 
 export const getProfile = async (
   request: FastifyRequest,

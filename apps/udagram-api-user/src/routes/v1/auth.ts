@@ -5,7 +5,7 @@ import {
   RefreshTokenSchema,
   SignupSchema,
 } from '../../schemas/auth.schema.js'
-import * as authController from '../../controllers/auth.controller.js'
+import * as authController from '../../controllers/rest/auth.controller.js'
 
 export default async function authRoutes(
   fastify: FastifyInstance,
