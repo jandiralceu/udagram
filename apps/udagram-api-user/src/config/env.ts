@@ -1,11 +1,20 @@
 const schema = {
   type: 'object',
-  required: ['DB_CONNECTION_STRING'],
+  required: [
+    'DB_CONNECTION_STRING',
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'AWS_BUCKET',
+  ],
   properties: {
     APP_NAME: { type: 'string', default: 'udagram-user-api' },
     PORT: { type: 'number', default: 8080 },
     DB_CONNECTION_STRING: { type: 'string' },
     DYNAMO_DB_ENDPOINT: { type: 'string' },
+    AWS_ACCESS_KEY_ID: { type: 'string' },
+    AWS_SECRET_ACCESS_KEY: { type: 'string' },
+    AWS_REGION: { type: 'string', default: 'us-east-1' },
+    AWS_BUCKET: { type: 'string' },
   },
 } as const
 
@@ -14,6 +23,10 @@ export interface EnvConfig {
   PORT: number
   DB_CONNECTION_STRING: string
   DYNAMO_DB_ENDPOINT: string
+  AWS_ACCESS_KEY_ID: string
+  AWS_SECRET_ACCESS_KEY: string
+  AWS_REGION: string
+  AWS_BUCKET: string
 }
 
 export default schema

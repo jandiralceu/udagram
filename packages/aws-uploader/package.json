@@ -1,0 +1,19 @@
+{
+  "name": "@udagram/aws-uploader",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "license": "ISC",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.985.0",
+    "@aws-sdk/s3-request-presigner": "^3.985.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "typescript": "^5.9.3"
+  }
+}
