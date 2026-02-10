@@ -2,7 +2,8 @@ import { desc, eq } from 'drizzle-orm'
 
 import { db } from '../db/index.js'
 import { feedsTable } from '../db/schema.js'
-import type { CreateFeedBody } from '../schemas/feeds.schema.js'
+
+import { upload, deleteFile } from '@udagram/aws-uploader'
 
 import { userClient } from '../clients/user.client.js'
 
@@ -18,29 +19,71 @@ export const findById = async (id: string) => {
   })
 }
 
-export const create = async (userId: string, data: CreateFeedBody) => {
-  // Fetch user details via gRPC
+export const create = async (
+  userId: string,
+  bucket: string,
+  data: {
+    caption: string
+    file: { data: Buffer; filename: string; mimetype: string }
+  }
+) => {
+  // 1. Fetch user to ensure valid user before uploading
   const user = await userClient.getUserById({ id: userId })
 
   if (!user) {
     throw new Error('User not found')
   }
 
-  const [newFeed] = await db
-    .insert(feedsTable)
-    .values({
-      caption: data.caption,
-      image_url: data.imageUrl,
-      user_id: user.id,
-      user_name: user.name,
-      user_avatar: user.avatarUrl ?? null,
-    })
-    .returning()
+  // 2. Upload image to S3 first
+  const { url, key } = await upload(bucket, {
+    file: data.file.data,
+    fileName: data.file.filename,
+    mimeType: data.file.mimetype,
+    folder: 'feeds',
+  })
 
-  return newFeed
+  try {
+    // 3. Create feed record in DB
+    const [newFeed] = await db
+      .insert(feedsTable)
+      .values({
+        caption: data.caption,
+        image_url: url,
+        user_id: user.id,
+        user_name: user.name,
+        user_avatar: user.avatarUrl ?? null,
+      })
+      .returning()
+
+    return newFeed
+  } catch (error) {
+    // 4. Rollback: specific cleanup if DB fails, to avoid orphaned files in S3
+    await deleteFile(bucket, key).catch(_error =>
+      console.warn('Failed to cleanup orphaned file:', _error)
+    )
+    throw error // Re-throw original error
+  }
 }
 
-export const deleteFeed = async (id: string) => {
+export const deleteFeed = async (id: string, bucket: string) => {
+  // 1. Get feed to find image URL
+  const feed = await findById(id)
+
+  if (!feed) {
+    throw new Error('Feed not found')
+  }
+
+  // 2. Delete from DB
   await db.delete(feedsTable).where(eq(feedsTable.id, id))
+
+  // 3. Delete from S3 (cleanup)
+  if (feed.image_url) {
+    try {
+      await deleteFile(bucket, feed.image_url)
+    } catch (error) {
+      console.warn(`Failed to delete S3 file for feed ${id}:`, error)
+    }
+  }
+
   return { message: 'Feed deleted successfully' }
 }

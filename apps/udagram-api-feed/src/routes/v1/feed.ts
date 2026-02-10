@@ -2,10 +2,7 @@ import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import * as feedController from '../../controllers/feeds.controller.js'
-import {
-  CreateFeedBodySchema,
-  GetFeedParamsSchema,
-} from '../../schemas/feeds.schema.js'
+import { GetFeedParamsSchema } from '../../schemas/feeds.schema.js'
 
 export default async function feedRoutes(
   fastify: FastifyInstance,
@@ -27,15 +24,7 @@ export default async function feedRoutes(
     feedController.getFeedById
   )
 
-  app.post(
-    '',
-    {
-      schema: {
-        body: CreateFeedBodySchema,
-      },
-    },
-    feedController.createFeed
-  )
+  app.post('', feedController.createFeed)
 
   app.delete(
     '/:feedId',

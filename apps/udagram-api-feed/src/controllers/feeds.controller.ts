@@ -1,7 +1,8 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
 import * as feedService from '../services/feeds.service.js'
-import type { CreateFeedBody, GetFeedParams } from '../schemas/feeds.schema.js'
+import type { GetFeedParams } from '../schemas/feeds.schema.js'
+import { CreateFeedMultipartSchema } from '../schemas/feeds.schema.js'
 
 export const getFeeds = async (
   _request: FastifyRequest,
@@ -25,13 +26,90 @@ export const getFeedById = async (
   return reply.send(feed)
 }
 
+type FilePayload = {
+  filename: string
+  mimetype: string
+  data: Buffer
+  size: number
+}
+
+const processMultipartRequest = async (request: FastifyRequest) => {
+  const parts = request.parts()
+  let filePayload: FilePayload | undefined
+  let caption: string | undefined
+
+  for await (const part of parts) {
+    if (part.type === 'file') {
+      if (part.fieldname === 'file') {
+        const buffer = await part.toBuffer()
+        filePayload = {
+          filename: part.filename,
+          mimetype: part.mimetype,
+          data: buffer,
+          size: buffer.byteLength,
+        }
+      } else {
+        // IMPORTANT: Must consume stream to proceed to next part
+        part.file.resume()
+        request.log.warn({
+          msg: 'Ignored file part',
+          fieldname: part.fieldname,
+        })
+      }
+    } else if (part.type === 'field') {
+      if (part.fieldname === 'caption') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        caption = (part as any).value
+      } else {
+        request.log.warn({
+          msg: 'Ignored field part',
+          fieldname: part.fieldname,
+        })
+      }
+    }
+  }
+
+  return { filePayload, caption }
+}
+
 export const createFeed = async (
-  request: FastifyRequest<{ Body: CreateFeedBody }>,
+  request: FastifyRequest,
   reply: FastifyReply
 ) => {
   try {
     const user = request.user as { sub: string }
-    const newFeed = await feedService.create(user.sub, request.body)
+
+    const { filePayload, caption } = await processMultipartRequest(request)
+
+    if (!filePayload) {
+      return reply.status(400).send({ message: 'File is required' })
+    }
+
+    if (!caption) {
+      return reply.status(400).send({ message: 'Caption is required' })
+    }
+
+    const payload = {
+      caption,
+      file: filePayload,
+    }
+
+    // Validate payload
+    const result = CreateFeedMultipartSchema.safeParse(payload)
+
+    if (!result.success) {
+      return reply.status(400).send({
+        message: 'Invalid input',
+        errors: result.error.issues,
+      })
+    }
+
+    const { config } = request.server
+    const newFeed = await feedService.create(user.sub, config.AWS_BUCKET, {
+      caption: result.data.caption,
+      file: result.data.file,
+    })
+
     return reply.status(201).send(newFeed)
   } catch (error) {
     request.log.error(error)
@@ -44,6 +122,7 @@ export const deleteFeed = async (
   reply: FastifyReply
 ) => {
   const { feedId } = request.params
-  await feedService.deleteFeed(feedId)
+  const { config } = request.server
+  await feedService.deleteFeed(feedId, config.AWS_BUCKET)
   return reply.send({ message: 'Feed deleted successfully' })
 }

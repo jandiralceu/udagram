@@ -8,6 +8,8 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
+import fastifyMultipart from '@fastify/multipart'
+import { createS3Client } from '@udagram/aws-uploader'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -70,6 +72,22 @@ fastify.decorate(
     }
   }
 )
+
+// Register multipart plugin for file uploads
+await fastify.register(fastifyMultipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit for posts (higher than avatars)
+  },
+})
+
+// Initialize S3 client
+createS3Client({
+  region: fastify.config.AWS_REGION,
+  credentials: {
+    accessKeyId: fastify.config.AWS_ACCESS_KEY_ID,
+    secretAccessKey: fastify.config.AWS_SECRET_ACCESS_KEY,
+  },
+})
 
 fastify.setValidatorCompiler(validatorCompiler)
 fastify.setSerializerCompiler(serializerCompiler)
