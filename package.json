@@ -1,6 +1,7 @@
 {
   "name": "udagram-monorepo",
   "private": true,
+  "type": "module",
   "packageManager": "npm@10.8.2",
   "workspaces": [
     "apps/*",
@@ -34,9 +35,10 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
+    "turbo": "latest",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0",
-    "turbo": "latest"
+    "vitest": "^4.0.18"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx,json,css,md}": [
