@@ -12,3 +12,5 @@ export type {
   UploadResult,
   SignedUrlOptions,
 } from './uploader.service.js'
+
+export { UploaderError } from './errors.js'

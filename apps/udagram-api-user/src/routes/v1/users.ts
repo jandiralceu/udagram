@@ -37,5 +37,7 @@ export default async function usersRoutes(
     usersController.update
   )
 
+  app.post('/avatar', usersController.updateAvatar)
+
   app.delete('', usersController.remove)
 }

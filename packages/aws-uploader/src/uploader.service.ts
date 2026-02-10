@@ -8,6 +8,7 @@ import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 
 import { getS3Client } from './s3.client.js'
+import { UploaderError } from './errors.js'
 
 export interface UploadOptions {
   /** The file content as a Buffer */
@@ -88,11 +89,26 @@ export async function upload(
     ContentType: options.mimeType,
   })
 
-  await s3.send(command)
+  try {
+    await s3.send(command)
 
-  const url = `https://${bucket}.s3.amazonaws.com/${key}`
+    // Get the region from the client config (it might be a provider function)
+    const region = await s3.config.region()
 
-  return { url, key }
+    // Standard S3 URL format
+    // us-east-1 uses the global endpoint: https://bucket.s3.amazonaws.com/key
+    // other regions use regional endpoint: https://bucket.s3.region.amazonaws.com/key
+    const hostname =
+      region === 'us-east-1'
+        ? `${bucket}.s3.amazonaws.com`
+        : `${bucket}.s3.${region}.amazonaws.com`
+
+    const url = `https://${hostname}/${key}`
+
+    return { url, key }
+  } catch (error) {
+    throw new UploaderError(`Failed to upload file "${key}" to S3`, error)
+  }
 }
 
 /**
@@ -110,7 +126,13 @@ export async function deleteFile(
     Key: key,
   })
 
-  await s3.send(command)
+  try {
+    await s3.send(command)
+  } catch (error) {
+    // Note: S3 DeleteObject is idempotent and usually doesn't throw if object not found.
+    // However, it might throw if bucket doesn't exist or permissions are missing.
+    throw new UploaderError(`Failed to delete file "${key}" from S3`, error)
+  }
 }
 
 /**
@@ -127,9 +149,16 @@ export async function generateSignedUrl(
     Key: options.key,
   })
 
-  return getSignedUrl(s3, command, {
-    expiresIn: options.expiresIn ?? 3600,
-  })
+  try {
+    return await getSignedUrl(s3, command, {
+      expiresIn: options.expiresIn ?? 3600,
+    })
+  } catch (error) {
+    throw new UploaderError(
+      `Failed to generate read-signed URL for "${options.key}"`,
+      error
+    )
+  }
 }
 
 /**
@@ -153,9 +182,16 @@ export async function generateUploadSignedUrl(
     ContentType: options.mimeType,
   })
 
-  const uploadUrl = await getSignedUrl(s3, command, {
-    expiresIn: options.expiresIn ?? 3600,
-  })
+  try {
+    const uploadUrl = await getSignedUrl(s3, command, {
+      expiresIn: options.expiresIn ?? 3600,
+    })
 
-  return { uploadUrl, key }
+    return { uploadUrl, key }
+  } catch (error) {
+    throw new UploaderError(
+      `Failed to generate upload-signed URL for "${key}"`,
+      error
+    )
+  }
 }

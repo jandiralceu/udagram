@@ -1,5 +1,6 @@
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
+import fastifyMultipart from '@fastify/multipart'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -14,6 +15,7 @@ import { fastifyConnectPlugin } from '@connectrpc/connect-fastify'
 import grpcRoutes from './controllers/grpc/users.grpc.js'
 
 import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
+import { createS3Client } from '@udagram/aws-uploader'
 import logger from '@udagram/logger-config'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -86,6 +88,22 @@ await fastify.register(dynamoPlugin, {
   credentials: {
     accessKeyId: 'test',
     secretAccessKey: 'test',
+  },
+})
+
+// Register multipart plugin for file uploads
+await fastify.register(fastifyMultipart, {
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+})
+
+// Initialize S3 client
+createS3Client({
+  region: fastify.config.AWS_REGION,
+  credentials: {
+    accessKeyId: fastify.config.AWS_ACCESS_KEY_ID,
+    secretAccessKey: fastify.config.AWS_SECRET_ACCESS_KEY,
   },
 })
 

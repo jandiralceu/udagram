@@ -1,4 +1,7 @@
 import { eq } from 'drizzle-orm'
+
+import { upload, deleteFile, UploaderError } from '@udagram/aws-uploader'
+
 import { db } from '../db/index.js'
 import { usersTable } from '../db/schema.js'
 import { hashPassword } from './password.service.js'
@@ -81,6 +84,60 @@ export const updateUser = async (userId: string, data: UpdateUserBody) => {
       created_at: usersTable.created_at,
       updated_at: usersTable.updated_at,
     })
+
+  return updatedUser
+}
+
+export const updateAvatar = async (
+  userId: string,
+  bucket: string,
+  file: { data: Buffer; filename: string; mimetype: string }
+) => {
+  // Save reference to the old avatar before doing anything
+  const currentUser = await getUserById(userId)
+  const oldAvatar = currentUser?.avatar
+
+  // 1. Upload the new avatar first
+  const { url } = await upload(bucket, {
+    file: file.data,
+    fileName: file.filename,
+    mimeType: file.mimetype,
+    folder: 'avatars',
+  })
+
+  // 2. Update the user's avatar in the database
+  const [updatedUser] = await db
+    .update(usersTable)
+    .set({ avatar: url, updated_at: new Date() })
+    .where(eq(usersTable.id, userId))
+    .returning({
+      id: usersTable.id,
+      name: usersTable.name,
+      email: usersTable.email,
+      avatar: usersTable.avatar,
+      created_at: usersTable.created_at,
+      updated_at: usersTable.updated_at,
+    })
+
+  // 3. Only after everything succeeded, delete the old avatar
+  if (oldAvatar) {
+    try {
+      await deleteFile(bucket, oldAvatar)
+    } catch (error) {
+      // Old file cleanup failure is not critical — the new avatar is already saved
+      // But we should log it for visibility
+      if (error instanceof UploaderError) {
+        console.warn(
+          `[Avatar Cleanup] Failed to delete old avatar: ${error.message}`
+        )
+      } else {
+        console.warn(
+          '[Avatar Cleanup] Unknown error deleting old avatar',
+          error
+        )
+      }
+    }
+  }
 
   return updatedUser
 }
