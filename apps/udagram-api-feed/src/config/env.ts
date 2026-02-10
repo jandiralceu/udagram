@@ -6,6 +6,7 @@ const schema = {
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
     'AWS_BUCKET',
+    'AWS_SNS_TOPIC_ARN',
   ],
   properties: {
     APP_NAME: { type: 'string', default: 'udagram-feed-api' },
@@ -16,6 +17,7 @@ const schema = {
     AWS_SECRET_ACCESS_KEY: { type: 'string' },
     AWS_REGION: { type: 'string', default: 'us-east-1' },
     AWS_BUCKET: { type: 'string' },
+    AWS_SNS_TOPIC_ARN: { type: 'string' },
   },
 } as const
 
@@ -28,6 +30,7 @@ export interface EnvConfig {
   AWS_SECRET_ACCESS_KEY: string
   AWS_REGION: string
   AWS_BUCKET: string
+  AWS_SNS_TOPIC_ARN: string
 }
 
 export default schema

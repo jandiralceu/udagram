@@ -6,6 +6,7 @@ import { db } from '../db/index.js'
 import { usersTable } from '../db/schema.js'
 import { hashPassword } from './password.service.js'
 import type { UpdateUserBody } from '../schemas/users.schema.js'
+import { publishUserEvent } from '../lib/sns.js'
 
 export const getUserById = async (userId: string) => {
   const user = await db.query.usersTable.findFirst({
@@ -85,6 +86,11 @@ export const updateUser = async (userId: string, data: UpdateUserBody) => {
       updated_at: usersTable.updated_at,
     })
 
+  if (updatedUser) {
+    // Only publish if something was actually updated
+    await publishUserEvent('UserUpdated', updatedUser)
+  }
+
   return updatedUser
 }
 
@@ -137,6 +143,10 @@ export const updateAvatar = async (
         )
       }
     }
+  }
+
+  if (updatedUser) {
+    await publishUserEvent('UserUpdated', updatedUser)
   }
 
   return updatedUser

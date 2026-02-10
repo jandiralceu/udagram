@@ -1,0 +1,20 @@
+{
+  "name": "@udagram/pubsub",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@aws-sdk/client-sns": "^3.985.0",
+    "@aws-sdk/client-sqs": "^3.985.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "eslint": "^9.19.0",
+    "typescript": "^5.7.3"
+  }
+}
