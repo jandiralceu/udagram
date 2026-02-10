@@ -1,10 +1,17 @@
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns'
+import {
+  SQSClient,
+  ReceiveMessageCommand,
+  DeleteMessageCommand,
+} from '@aws-sdk/client-sqs'
 
 export class PubSubClient {
   private readonly snsClient: SNSClient
+  private readonly sqsClient: SQSClient
 
   constructor(region: string = process.env.AWS_REGION || 'us-east-1') {
     this.snsClient = new SNSClient({ region })
+    this.sqsClient = new SQSClient({ region })
   }
 
   async publish(
@@ -36,6 +43,60 @@ export class PubSubClient {
     } catch (error) {
       console.error(`[PubSub] Failed to publish event ${eventType}:`, error)
       throw error
+    }
+  }
+
+  async poll(
+    queueUrl: string,
+    handler: (eventType: string, data: unknown) => Promise<void>
+  ) {
+    console.info(`[PubSub] Starting poll on queue ${queueUrl}`)
+    // Infinite loop correctly implemented for polling
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        const { Messages } = await this.sqsClient.send(
+          new ReceiveMessageCommand({
+            QueueUrl: queueUrl,
+            MaxNumberOfMessages: 10,
+            WaitTimeSeconds: 20, // Long polling
+          })
+        )
+
+        if (!Messages || Messages.length === 0) continue
+
+        for (const message of Messages) {
+          if (!message.Body) continue
+
+          try {
+            // SQS message body from SNS is a JSON string containing the 'Message' field
+            // The actual payload we sent is inside that 'Message' field
+            const snsMessage = JSON.parse(message.Body)
+            const { eventType, data } = JSON.parse(snsMessage.Message)
+
+            await handler(eventType, data)
+
+            // Delete message after successful processing
+            await this.sqsClient.send(
+              new DeleteMessageCommand({
+                QueueUrl: queueUrl,
+                ReceiptHandle: message.ReceiptHandle,
+              })
+            )
+          } catch (processingError) {
+            console.error(
+              '[PubSub] Error processing message:',
+              processingError,
+              message.Body
+            )
+            // We don't delete the message so it can be retried (Dead Letter Queue recommended)
+          }
+        }
+      } catch (pollError) {
+        console.error('[PubSub] Pooling error:', pollError)
+        // Wait a bit before retrying to avoid tight loop on network errors
+        await new Promise(resolve => setTimeout(resolve, 5000))
+      }
     }
   }
 }

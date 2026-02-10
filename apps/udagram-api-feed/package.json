@@ -17,6 +17,7 @@
     "@fastify/multipart": "^9.4.0",
     "@udagram/aws-uploader": "^1.0.0",
     "@udagram/logger-config": "^1.0.0",
+    "@udagram/pubsub": "^1.0.0",
     "@udagram/user-grpc": "^1.0.0",
     "dotenv": "^17.2.4",
     "drizzle-orm": "^0.45.1",

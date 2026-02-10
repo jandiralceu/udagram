@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
+import { PubSubClient, PubSubEvents } from '@udagram/pubsub'
 import fastifyI18n from 'fastify-i18n'
 import fastifyJwt from '@fastify/jwt'
 import {
@@ -19,6 +20,7 @@ import logger from '@udagram/logger-config'
 import schema, { type EnvConfig } from './config/env.js'
 import messages from './config/i18n.js'
 import feedRoutes from './routes/v1/feed.js'
+import { updateUserInfo } from './services/feeds.service.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -80,6 +82,8 @@ await fastify.register(fastifyMultipart, {
   },
 })
 
+const pubSubClient = new PubSubClient(fastify.config.AWS_REGION)
+
 // Initialize S3 client
 createS3Client({
   region: fastify.config.AWS_REGION,
@@ -107,5 +111,23 @@ fastify.listen(
     }
 
     console.log(`Server listening at ${address}`)
+
+    // Start polling for events in the background
+    pubSubClient.poll(
+      fastify.config.AWS_SQS_QUEUE_URL,
+      async (eventType: string, data: unknown) => {
+        if (eventType === PubSubEvents.USER_UPDATED) {
+          const userData = data as {
+            id: string
+            name: string
+            avatar: string | null
+          }
+          console.log(
+            `[Feed Service] Received UserUpdated event for user ${userData.id}`
+          )
+          await updateUserInfo(userData.id, userData)
+        }
+      }
+    )
   }
 )

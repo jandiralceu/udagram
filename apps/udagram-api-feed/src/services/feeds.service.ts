@@ -87,3 +87,17 @@ export const deleteFeed = async (id: string, bucket: string) => {
 
   return { message: 'Feed deleted successfully' }
 }
+
+export const updateUserInfo = async (
+  userId: string,
+  data: { name: string; avatar: string | null }
+) => {
+  await db
+    .update(feedsTable)
+    .set({
+      user_name: data.name,
+      user_avatar: data.avatar,
+      updated_at: new Date(),
+    })
+    .where(eq(feedsTable.user_id, userId))
+}
