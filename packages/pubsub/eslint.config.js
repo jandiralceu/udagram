@@ -1,7 +1,8 @@
 import js from '@eslint/js'
-import tseslint from '@typescript-eslint/eslint-plugin'
+import tseslint from 'typescript-eslint'
 import tsparser from '@typescript-eslint/parser'
 import prettier from 'eslint-plugin-prettier'
+
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 
@@ -10,6 +11,7 @@ const __dirname = dirname(__filename)
 
 export default [
   js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
@@ -17,7 +19,7 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './tsconfig.eslint.json',
+        project: './tsconfig.json',
         tsconfigRootDir: __dirname,
       },
       globals: {
@@ -33,14 +35,10 @@ export default [
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint,
       prettier: prettier,
     },
     rules: {
-      // Prettier
       'prettier/prettier': 'error',
-
-      // TypeScript
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
@@ -50,15 +48,6 @@ export default [
         },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
-
-      // Style
-      semi: ['error', 'never'],
-      quotes: ['error', 'single'],
-      'comma-dangle': ['error', 'only-multiline'],
-
-      // Best practices
-      'no-console': 'off',
-      'no-unused-vars': 'off', // Use TypeScript rule instead
     },
   },
   {

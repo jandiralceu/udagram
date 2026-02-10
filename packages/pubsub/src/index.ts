@@ -52,7 +52,6 @@ export class PubSubClient {
   ) {
     console.info(`[PubSub] Starting poll on queue ${queueUrl}`)
     // Infinite loop correctly implemented for polling
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         const { Messages } = await this.sqsClient.send(

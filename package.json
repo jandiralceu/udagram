@@ -41,6 +41,26 @@
     "vitest": "^4.0.18"
   },
   "lint-staged": {
+    "apps/udagram-api-user/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix --config apps/udagram-api-user/eslint.config.js",
+      "prettier --write"
+    ],
+    "apps/udagram-api-feed/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix --config apps/udagram-api-feed/eslint.config.js",
+      "prettier --write"
+    ],
+    "packages/pubsub/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix --config packages/pubsub/eslint.config.js",
+      "prettier --write"
+    ],
+    "packages/aws-uploader/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix --config packages/aws-uploader/eslint.config.js",
+      "prettier --write"
+    ],
+    "packages/fastify-dynamo-plugin/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix --config packages/fastify-dynamo-plugin/eslint.config.js",
+      "prettier --write"
+    ],
     "**/*.{js,jsx,ts,tsx,json,css,md}": [
       "prettier --write"
     ]
