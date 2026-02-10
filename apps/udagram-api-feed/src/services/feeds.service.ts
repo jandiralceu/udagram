@@ -3,7 +3,7 @@ import { desc, eq } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { feedsTable } from '../db/schema.js'
 
-import { upload, deleteFile } from '@udagram/aws-uploader'
+import { s3Service } from '../clients/s3.js'
 
 import { userClient } from '../clients/user.client.js'
 
@@ -35,7 +35,7 @@ export const create = async (
   }
 
   // 2. Upload image to S3 first
-  const { url, key } = await upload(bucket, {
+  const { url, key } = await s3Service.upload(bucket, {
     file: data.file.data,
     fileName: data.file.filename,
     mimeType: data.file.mimetype,
@@ -58,9 +58,9 @@ export const create = async (
     return newFeed
   } catch (error) {
     // 4. Rollback: specific cleanup if DB fails, to avoid orphaned files in S3
-    await deleteFile(bucket, key).catch(_error =>
-      console.warn('Failed to cleanup orphaned file:', _error)
-    )
+    await s3Service
+      .deleteFile(bucket, key)
+      .catch(_error => console.warn('Failed to cleanup orphaned file:', _error))
     throw error // Re-throw original error
   }
 }
@@ -79,7 +79,7 @@ export const deleteFeed = async (id: string, bucket: string) => {
   // 3. Delete from S3 (cleanup)
   if (feed.image_url) {
     try {
-      await deleteFile(bucket, feed.image_url)
+      await s3Service.deleteFile(bucket, feed.image_url)
     } catch (error) {
       console.warn(`Failed to delete S3 file for feed ${id}:`, error)
     }

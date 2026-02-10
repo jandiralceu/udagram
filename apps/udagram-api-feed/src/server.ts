@@ -10,7 +10,7 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
 import fastifyMultipart from '@fastify/multipart'
-import { createS3Client } from '@udagram/aws-uploader'
+
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -85,13 +85,7 @@ await fastify.register(fastifyMultipart, {
 const pubSubClient = new PubSubClient(fastify.config.AWS_REGION)
 
 // Initialize S3 client
-createS3Client({
-  region: fastify.config.AWS_REGION,
-  credentials: {
-    accessKeyId: fastify.config.AWS_ACCESS_KEY_ID,
-    secretAccessKey: fastify.config.AWS_SECRET_ACCESS_KEY,
-  },
-})
+// S3 Client initialized in clients/s3.ts
 
 fastify.setValidatorCompiler(validatorCompiler)
 fastify.setSerializerCompiler(serializerCompiler)

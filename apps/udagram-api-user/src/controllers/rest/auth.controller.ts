@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify'
 
 import * as usersService from '../../services/users.service.js'
 import { verifyPassword } from '../../services/password.service.js'
-import * as dynamoService from '../../services/dynamo.service.js'
+import * as dynamoService from '@udagram/fastify-dynamo-plugin'
 import type {
   LoginDTO,
   RefreshTokenDTO,

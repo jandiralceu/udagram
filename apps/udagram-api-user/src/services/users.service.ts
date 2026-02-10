@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
 
-import { upload, deleteFile, UploaderError } from '@udagram/aws-uploader'
+import { s3Service } from '../lib/s3.js'
+import { UploaderError } from '@udagram/aws-uploader'
 
 import { db } from '../db/index.js'
 import { usersTable } from '../db/schema.js'
@@ -104,7 +105,7 @@ export const updateAvatar = async (
   const oldAvatar = currentUser?.avatar
 
   // 1. Upload the new avatar first
-  const { url } = await upload(bucket, {
+  const { url } = await s3Service.upload(bucket, {
     file: file.data,
     fileName: file.filename,
     mimeType: file.mimetype,
@@ -128,7 +129,7 @@ export const updateAvatar = async (
   // 3. Only after everything succeeded, delete the old avatar
   if (oldAvatar) {
     try {
-      await deleteFile(bucket, oldAvatar)
+      await s3Service.deleteFile(bucket, oldAvatar)
     } catch (error) {
       // Old file cleanup failure is not critical — the new avatar is already saved
       // But we should log it for visibility

@@ -51,3 +51,5 @@ const dynamoPlugin = fp(
 )
 
 export default dynamoPlugin
+
+export * from './utils.js'

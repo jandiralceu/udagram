@@ -15,7 +15,7 @@ import { fastifyConnectPlugin } from '@connectrpc/connect-fastify'
 import grpcRoutes from './controllers/grpc/users.grpc.js'
 
 import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
-import { createS3Client } from '@udagram/aws-uploader'
+// s3 initialized in lib/s3.ts
 import logger from '@udagram/logger-config'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -99,13 +99,7 @@ await fastify.register(fastifyMultipart, {
 })
 
 // Initialize S3 client
-createS3Client({
-  region: fastify.config.AWS_REGION,
-  credentials: {
-    accessKeyId: fastify.config.AWS_ACCESS_KEY_ID,
-    secretAccessKey: fastify.config.AWS_SECRET_ACCESS_KEY,
-  },
-})
+// S3 Client initialized in lib/s3.ts
 
 fastify.setValidatorCompiler(validatorCompiler)
 fastify.setSerializerCompiler(serializerCompiler)
