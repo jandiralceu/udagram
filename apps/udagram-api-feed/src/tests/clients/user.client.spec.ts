@@ -51,7 +51,7 @@ describe('User Client', () => {
     })
 
     it('should default to empty string when USER_GRPC_URL is not set', async () => {
-      vi.stubEnv('USER_GRPC_URL', '')
+      delete process.env.USER_GRPC_URL
       vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
 
       await import('../../clients/user.client.js')
