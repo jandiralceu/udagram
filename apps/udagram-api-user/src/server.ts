@@ -116,12 +116,10 @@ fastify.register(fastifyConnectPlugin, { routes: grpcRoutes })
 
 fastify.listen(
   { port: fastify.config.PORT, host: '0.0.0.0.' },
-  (err, address) => {
+  (err, _address) => {
     if (err) {
       fastify.log.error(err)
       process.exit(1)
     }
-
-    console.log(`Server listening at ${address}`)
   }
 )

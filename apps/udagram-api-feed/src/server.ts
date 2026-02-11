@@ -25,12 +25,6 @@ import { updateUserInfo } from './services/feeds.service.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const env = process.env.NODE_ENV || 'development'
-
-const fastify = Fastify({
-  logger: logger[env as keyof typeof logger],
-}).withTypeProvider<ZodTypeProvider>()
-
 declare module 'fastify' {
   interface FastifyInstance {
     config: EnvConfig
@@ -41,70 +35,77 @@ declare module 'fastify' {
   }
 }
 
-// Register the environment plugin
-await fastify.register(fastifyEnv, {
-  schema,
-  dotenv: true,
-} as FastifyEnvOptions)
+// Export buildServer for testing
+export async function buildServer() {
+  const env = process.env.NODE_ENV || 'development'
 
-// Register the i18n plugin
-await fastify.register(fastifyI18n, {
-  fallbackLocale: 'en',
-  messages,
-})
+  const fastify = Fastify({
+    logger: logger[env as keyof typeof logger],
+  }).withTypeProvider<ZodTypeProvider>()
 
-// Register JWT plugin
-await fastify.register(fastifyJwt, {
-  secret: {
-    public: fs.readFileSync(
-      path.join(__dirname, '../../../public.pem'),
-      'utf8'
-    ),
-  },
-  sign: { algorithm: 'RS256' },
-})
+  // Register the environment plugin
+  await fastify.register(fastifyEnv, {
+    schema,
+    dotenv: true,
+  } as FastifyEnvOptions)
 
-fastify.decorate(
-  'authenticate',
-  async function (request: FastifyRequest, reply: FastifyReply) {
-    try {
-      await request.jwtVerify()
-    } catch (err) {
-      reply.send(err)
+  // Register the i18n plugin
+  await fastify.register(fastifyI18n, {
+    fallbackLocale: 'en',
+    messages,
+  })
+
+  // Register JWT plugin
+  await fastify.register(fastifyJwt, {
+    secret: {
+      public: fs.readFileSync(
+        path.join(__dirname, '../../../public.pem'),
+        'utf8'
+      ),
+    },
+    sign: { algorithm: 'RS256' },
+  })
+
+  fastify.decorate(
+    'authenticate',
+    async function (request: FastifyRequest, reply: FastifyReply) {
+      try {
+        await request.jwtVerify()
+      } catch (err) {
+        reply.send(err)
+      }
     }
-  }
-)
+  )
 
-// Register multipart plugin for file uploads
-await fastify.register(fastifyMultipart, {
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit for posts (higher than avatars)
-  },
-})
+  // Register multipart plugin for file uploads
+  await fastify.register(fastifyMultipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit for posts (higher than avatars)
+    },
+  })
 
-const pubSubClient = new PubSubClient(fastify.config.AWS_REGION)
+  fastify.setValidatorCompiler(validatorCompiler)
+  fastify.setSerializerCompiler(serializerCompiler)
 
-// Initialize S3 client
-// S3 Client initialized in clients/s3.ts
+  fastify.get('/health', async function handler(_request, _reply) {
+    return { app: fastify.config.APP_NAME }
+  })
 
-fastify.setValidatorCompiler(validatorCompiler)
-fastify.setSerializerCompiler(serializerCompiler)
+  fastify.register(feedRoutes, { prefix: '/api/v1/feeds' })
 
-fastify.get('/health', async function handler(_request, _reply) {
-  return { app: fastify.config.APP_NAME }
-})
+  // Initialize PubSub (but don't start polling here to avoid side effects in tests)
+  // We can start polling in the listen callback or separate start function
+  const pubSubClient = new PubSubClient(fastify.config.AWS_REGION)
 
-fastify.register(feedRoutes, { prefix: '/api/v1/feeds' })
+  return { fastify, pubSubClient }
+}
 
-fastify.listen(
-  { port: fastify.config.PORT, host: '0.0.0.0' },
-  (err, address) => {
-    if (err) {
-      fastify.log.error(err)
-      process.exit(1)
-    }
+// Function to start the server
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  try {
+    const { fastify, pubSubClient } = await buildServer()
 
-    console.log(`Server listening at ${address}`)
+    await fastify.listen({ port: fastify.config.PORT, host: '0.0.0.0' })
 
     // Start polling for events in the background
     pubSubClient.poll(
@@ -123,5 +124,8 @@ fastify.listen(
         }
       }
     )
+  } catch (err) {
+    console.error(err)
+    process.exit(1)
   }
-)
+}

@@ -147,6 +147,63 @@ describe('Feeds Service (Integration with PGLite)', () => {
         )
       )
     })
+
+    it('should return feeds ordered by created_at descending', async () => {
+      const feedsToCreate = [
+        {
+          caption: 'First created',
+          file: {
+            data: Buffer.from(''),
+            filename: `${faker.string.uuid()}.png`,
+            mimetype: 'image/png',
+          },
+          mockUser: {
+            id: faker.string.uuid(),
+            name: faker.person.fullName(),
+            avatarUrl: faker.image.avatar(),
+          },
+        },
+        {
+          caption: 'Second created',
+          file: {
+            data: Buffer.from(''),
+            filename: `${faker.string.uuid()}.png`,
+            mimetype: 'image/png',
+          },
+          mockUser: {
+            id: faker.string.uuid(),
+            name: faker.person.fullName(),
+            avatarUrl: faker.image.avatar(),
+          },
+        },
+      ]
+
+      // Create sequentially to ensure different created_at timestamps
+      for (const feed of feedsToCreate) {
+        vi.mocked(userClient.getUserById).mockResolvedValue(
+          feed.mockUser as unknown as GetUserByIdResponse
+        )
+        vi.mocked(s3Service.upload).mockResolvedValue({
+          url: faker.image.avatar(),
+          key: faker.string.uuid(),
+        })
+
+        await create(feed.mockUser.id, 'bucket', {
+          caption: feed.caption,
+          file: feed.file,
+        })
+
+        // Small delay to ensure distinct created_at timestamps in PGLite
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+
+      const result = await findAll()
+      expect(result).toHaveLength(2)
+
+      // Most recent feed should come first (DESC order)
+      expect(result[0]?.caption).toBe('Second created')
+      expect(result[1]?.caption).toBe('First created')
+    })
   })
 
   describe('findById', () => {
@@ -267,6 +324,84 @@ describe('Feeds Service (Integration with PGLite)', () => {
 
       expect(s3Service.deleteFile).toHaveBeenCalledWith('bucket', key)
     })
+
+    it('should throw if user is not found', async () => {
+      vi.mocked(userClient.getUserById).mockResolvedValue(
+        null as unknown as GetUserByIdResponse
+      )
+
+      await expect(
+        create(faker.string.uuid(), 'bucket', {
+          caption: faker.lorem.sentence(),
+          file: {
+            data: Buffer.from(''),
+            filename: `${faker.string.uuid()}.png`,
+            mimetype: 'image/png',
+          },
+        })
+      ).rejects.toThrow('User not found')
+
+      // S3 upload should never be called if user doesn't exist
+      expect(s3Service.upload).not.toHaveBeenCalled()
+    })
+
+    it('should throw if S3 upload fails', async () => {
+      const userId = faker.string.uuid()
+      const errorMessage = 'S3 unavailable'
+
+      vi.mocked(userClient.getUserById).mockResolvedValue({
+        id: userId,
+        name: faker.person.fullName(),
+        avatarUrl: faker.image.avatar(),
+      } as unknown as GetUserByIdResponse)
+      vi.mocked(s3Service.upload).mockRejectedValue(new Error(errorMessage))
+
+      await expect(
+        create(userId, 'bucket', {
+          caption: faker.lorem.sentence(),
+          file: {
+            data: Buffer.from(''),
+            filename: `${faker.string.uuid()}.png`,
+            mimetype: 'image/png',
+          },
+        })
+      ).rejects.toThrow(errorMessage)
+    })
+
+    it('should throw original DB error even if S3 cleanup fails', async () => {
+      const userId = faker.string.uuid()
+      const dbErrorMessage = 'DB insert failed'
+
+      vi.mocked(userClient.getUserById).mockResolvedValue({
+        id: userId,
+        name: faker.person.fullName(),
+      } as unknown as GetUserByIdResponse)
+      vi.mocked(s3Service.upload).mockResolvedValue({
+        url: faker.image.avatar(),
+        key: faker.string.uuid(),
+      })
+      vi.mocked(s3Service.deleteFile).mockRejectedValue(
+        new Error('S3 cleanup failed')
+      )
+
+      vi.spyOn(testDb, 'insert').mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockRejectedValue(new Error(dbErrorMessage)),
+        }),
+      } as unknown as ReturnType<typeof testDb.insert>)
+
+      // Should throw the DB error, not the S3 cleanup error
+      await expect(
+        create(userId, 'bucket', {
+          caption: faker.lorem.sentence(),
+          file: {
+            data: Buffer.from(''),
+            filename: `${faker.string.uuid()}.png`,
+            mimetype: 'image/png',
+          },
+        })
+      ).rejects.toThrow(dbErrorMessage)
+    })
   })
 
   describe('deleteFeed', () => {
@@ -299,6 +434,45 @@ describe('Feeds Service (Integration with PGLite)', () => {
       const found = await findById(feed.id)
       expect(found).toBeUndefined()
       expect(s3Service.deleteFile).toHaveBeenCalledWith('bucket', feedImage)
+    })
+
+    it('should throw if feed does not exist', async () => {
+      await expect(deleteFeed(faker.string.uuid(), 'bucket')).rejects.toThrow(
+        'Feed not found'
+      )
+    })
+
+    it('should delete from DB even if S3 deletion fails', async () => {
+      const userId = faker.string.uuid()
+
+      vi.mocked(userClient.getUserById).mockResolvedValue({
+        id: userId,
+        name: faker.person.fullName(),
+      } as unknown as GetUserByIdResponse)
+      vi.mocked(s3Service.upload).mockResolvedValue({
+        url: faker.image.avatar(),
+        key: faker.string.uuid(),
+      })
+
+      const feed = await create(userId, 'bucket', {
+        caption: faker.lorem.sentence(),
+        file: {
+          data: Buffer.from(''),
+          filename: `${faker.string.uuid()}.png`,
+          mimetype: 'image/png',
+        },
+      })
+
+      if (!feed) throw new Error('Feed not created')
+
+      // S3 deletion will fail, but DB delete should still succeed
+      vi.mocked(s3Service.deleteFile).mockRejectedValue(new Error('S3 error'))
+
+      // Should NOT throw despite S3 failure
+      await expect(deleteFeed(feed.id, 'bucket')).resolves.not.toThrow()
+
+      const found = await findById(feed.id)
+      expect(found).toBeUndefined()
     })
   })
 
@@ -342,6 +516,15 @@ describe('Feeds Service (Integration with PGLite)', () => {
       expect(updatedFeed).toBeDefined()
       expect(updatedFeed!.user_name).toBe(newUserFullName)
       expect(updatedFeed!.user_avatar).toBe(newUserAvatarUrl)
+    })
+
+    it('should not throw when user has no feeds', async () => {
+      await expect(
+        updateUserInfo(faker.string.uuid(), {
+          name: faker.person.fullName(),
+          avatar: faker.image.avatar(),
+        })
+      ).resolves.not.toThrow()
     })
   })
 })
