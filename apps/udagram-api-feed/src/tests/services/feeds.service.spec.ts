@@ -370,6 +370,7 @@ describe('Feeds Service (Integration with PGLite)', () => {
     })
 
     it('should throw original DB error even if S3 cleanup fails', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
       const userId = faker.string.uuid()
       const dbErrorMessage = 'DB insert failed'
 
@@ -407,6 +408,7 @@ describe('Feeds Service (Integration with PGLite)', () => {
 
   describe('deleteFeed', () => {
     it('should delete from DB and S3', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
       const userId = faker.string.uuid()
       const feedImage = faker.image.avatar()
 
@@ -444,6 +446,7 @@ describe('Feeds Service (Integration with PGLite)', () => {
     })
 
     it('should delete from DB even if S3 deletion fails', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
       const userId = faker.string.uuid()
 
       vi.mocked(userClient.getUserById).mockResolvedValue({
