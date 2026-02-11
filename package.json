@@ -44,20 +44,12 @@
     "vitest": "^4.0.18"
   },
   "lint-staged": {
-    "apps/udagram-api-user/!(vitest.config).{js,jsx,ts,tsx}": [
-      "eslint --fix --config apps/udagram-api-user/eslint.config.js",
-      "prettier --write"
-    ],
-    "apps/udagram-api-user/src/**/*.{js,jsx,ts,tsx}": [
+    "apps/udagram-api-user/**/!(vitest.config).{js,jsx,ts,tsx}": [
       "eslint --fix --config apps/udagram-api-user/eslint.config.js",
       "prettier --write",
       "vitest related --run --config apps/udagram-api-user/vitest.config.ts"
     ],
-    "apps/udagram-api-feed/!(vitest.config).{js,jsx,ts,tsx}": [
-      "eslint --fix --config apps/udagram-api-feed/eslint.config.js",
-      "prettier --write"
-    ],
-    "apps/udagram-api-feed/src/**/*.{js,jsx,ts,tsx}": [
+    "apps/udagram-api-feed/**/!(vitest.config).{js,jsx,ts,tsx}": [
       "eslint --fix --config apps/udagram-api-feed/eslint.config.js",
       "prettier --write",
       "vitest related --run --config apps/udagram-api-feed/vitest.config.ts"
