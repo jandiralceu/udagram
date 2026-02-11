@@ -50,7 +50,8 @@
     ],
     "apps/udagram-api-user/src/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix --config apps/udagram-api-user/eslint.config.js",
-      "prettier --write"
+      "prettier --write",
+      "vitest related --run --config apps/udagram-api-user/vitest.config.ts"
     ],
     "apps/udagram-api-feed/!(vitest.config).{js,jsx,ts,tsx}": [
       "eslint --fix --config apps/udagram-api-feed/eslint.config.js",
@@ -58,7 +59,8 @@
     ],
     "apps/udagram-api-feed/src/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix --config apps/udagram-api-feed/eslint.config.js",
-      "prettier --write"
+      "prettier --write",
+      "vitest related --run --config apps/udagram-api-feed/vitest.config.ts"
     ],
     "packages/pubsub/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix --config packages/pubsub/eslint.config.js",
