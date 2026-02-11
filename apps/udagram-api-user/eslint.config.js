@@ -62,6 +62,13 @@ export default [
     },
   },
   {
-    ignores: ['node_modules', 'dist', 'build', '*.config.js', 'gen'],
+    ignores: [
+      'node_modules',
+      'dist',
+      'build',
+      '*.config.js',
+      'gen',
+      'vitest.config.ts',
+    ],
   },
 ]

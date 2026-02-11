@@ -8,4 +8,5 @@ dist
 .vscode
 *.pem
 *_accessKeys.csv
+coverage
 

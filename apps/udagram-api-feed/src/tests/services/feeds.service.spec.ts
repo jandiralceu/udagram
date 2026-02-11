@@ -11,6 +11,7 @@ import {
 import { s3Service } from '../../clients/s3.js'
 import { userClient } from '../../clients/user.client.js'
 import type { GetUserByIdResponse } from '@udagram/user-grpc'
+import { feedsTable } from '../../db/schema.js'
 import { setupTestDb } from '../test-db.js'
 
 // 1. Setup global variable for test DB instance
@@ -473,6 +474,29 @@ describe('Feeds Service (Integration with PGLite)', () => {
 
       const found = await findById(feed.id)
       expect(found).toBeUndefined()
+    })
+
+    it('should skip S3 deletion when image_url is empty', async () => {
+      // Insert a feed with empty image_url directly into the DB
+      const [feed] = await testDb
+        .insert(feedsTable)
+        .values({
+          caption: faker.lorem.sentence(),
+          image_url: '',
+          user_id: faker.string.uuid(),
+          user_name: faker.person.fullName(),
+        })
+        .returning()
+
+      if (!feed) throw new Error('Feed not created')
+
+      vi.mocked(s3Service.deleteFile).mockClear()
+
+      await deleteFeed(feed.id, 'bucket')
+
+      const found = await findById(feed.id)
+      expect(found).toBeUndefined()
+      expect(s3Service.deleteFile).not.toHaveBeenCalled()
     })
   })
 

@@ -99,10 +99,12 @@ describe('Feed Routes', () => {
 
       const body = response.json()
       expect(body).toHaveLength(1)
+
+      const expected = mockFeeds[0]!
       expect(body[0]).toMatchObject({
-        id: mockFeeds[0]!.id,
-        caption: mockFeeds[0]!.caption,
-        image_url: mockFeeds[0]!.image_url,
+        id: expected.id,
+        caption: expected.caption,
+        image_url: expected.image_url,
         user_id: testUserId,
       })
     })
@@ -291,6 +293,87 @@ describe('Feed Routes', () => {
 
       expect(response.statusCode).toBe(400)
       expect(response.json()).toHaveProperty('message', 'Invalid input')
+    })
+
+    it('should ignore extra file parts with unknown fieldnames', async () => {
+      const createdFeed = mockFeed({
+        caption: 'Extra files test',
+        user_id: testUserId,
+      })
+
+      vi.mocked(feedService.create).mockResolvedValue(createdFeed)
+
+      // Build multipart with an extra file part (fieldname: "avatar")
+      const boundary = `----formdata-${faker.string.uuid()}`
+      const body = [
+        `--${boundary}`,
+        'Content-Disposition: form-data; name="caption"',
+        '',
+        'Extra files test',
+        `--${boundary}`,
+        'Content-Disposition: form-data; name="avatar"; filename="avatar.png"',
+        'Content-Type: image/png',
+        '',
+        'extra-file-data',
+        `--${boundary}`,
+        'Content-Disposition: form-data; name="file"; filename="test.png"',
+        'Content-Type: image/png',
+        '',
+        'real-file-data',
+        `--${boundary}--`,
+      ].join('\r\n')
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/feeds',
+        headers: {
+          authorization: `Bearer ${authToken}`,
+          'content-type': `multipart/form-data; boundary=${boundary}`,
+        },
+        payload: body,
+      })
+
+      expect(response.statusCode).toBe(201)
+    })
+
+    it('should ignore extra field parts with unknown fieldnames', async () => {
+      const createdFeed = mockFeed({
+        caption: 'Extra fields test',
+        user_id: testUserId,
+      })
+
+      vi.mocked(feedService.create).mockResolvedValue(createdFeed)
+
+      // Build multipart with an extra text field (fieldname: "description")
+      const boundary = `----formdata-${faker.string.uuid()}`
+      const body = [
+        `--${boundary}`,
+        'Content-Disposition: form-data; name="caption"',
+        '',
+        'Extra fields test',
+        `--${boundary}`,
+        'Content-Disposition: form-data; name="description"',
+        '',
+        'This extra field should be ignored',
+        `--${boundary}`,
+        'Content-Disposition: form-data; name="file"; filename="test.png"',
+        'Content-Type: image/png',
+        '',
+        'real-file-data',
+        `--${boundary}--`,
+      ].join('\r\n')
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/feeds',
+        headers: {
+          authorization: `Bearer ${authToken}`,
+          'content-type': `multipart/form-data; boundary=${boundary}`,
+        },
+        payload: body,
+      })
+
+      expect(response.statusCode).toBe(201)
     })
 
     it('should return 500 when service throws', async () => {
