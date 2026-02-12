@@ -110,4 +110,52 @@ describe('Server', () => {
 
     expect(getSecret).toHaveBeenCalledWith(secretName, defaultRegion)
   })
+
+  it('should throw if JWT keys are missing from Secrets Manager', async () => {
+    const secretName = faker.string.uuid()
+    vi.stubEnv('JWT_SECRET_NAME', secretName)
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
+    vi.stubEnv(
+      'AWS_SNS_TOPIC_ARN',
+      `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
+    )
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
+
+    vi.mocked(getSecret).mockResolvedValue({
+      private: 'some-key',
+      // public key missing
+    })
+
+    await expect(buildServer()).rejects.toThrow(
+      'JWT_SECRET_NAME must contain both private and public keys'
+    )
+  })
+
+  it('should throw if no JWT keys configuration is provided', async () => {
+    vi.stubEnv('JWT_SECRET_NAME', '')
+    vi.stubEnv('JWT_PUBLIC_KEY_FILE', '')
+    vi.stubEnv('JWT_PRIVATE_KEY_FILE', '')
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
+    vi.stubEnv(
+      'AWS_SNS_TOPIC_ARN',
+      `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
+    )
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
+
+    await expect(buildServer()).rejects.toThrow(
+      'Either JWT_SECRET_NAME or both local key files must be provided'
+    )
+  })
 })
