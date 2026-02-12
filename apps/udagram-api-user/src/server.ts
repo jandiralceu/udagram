@@ -78,7 +78,11 @@ export async function buildServer() {
       },
       servers: [],
     },
-    transform: jsonSchemaTransform,
+    transform: (params: Parameters<typeof jsonSchemaTransform>[0]) => {
+      const { schema, url } = jsonSchemaTransform(params)
+      const isRestRoute = url.startsWith('/api/')
+      return { schema: { ...schema, hide: !isRestRoute }, url }
+    },
   })
 
   await fastify.register(fastifySwaggerUi, {

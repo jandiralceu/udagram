@@ -17,8 +17,24 @@ export const SignupSchema = z
     path: ['confirmPassword'],
   })
 
+export const SignupResponseSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  email: z.email(),
+  avatar: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+})
+
+export const TokenResponseSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+})
+
 export type LoginDTO = z.infer<typeof LoginSchema>
 export type SignupDTO = z.infer<typeof SignupSchema>
+export type SignupResponse = z.infer<typeof SignupResponseSchema>
+export type TokenResponse = z.infer<typeof TokenResponseSchema>
 
 export const RefreshTokenSchema = z.object({
   refreshToken: z.string(),

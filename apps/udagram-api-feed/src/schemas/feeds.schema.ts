@@ -41,14 +41,14 @@ export const CreateFeedMultipartSchema = z.object({
 })
 
 export const FeedResponseSchema = z.object({
-  id: z.uuid(),
+  id: z.string().uuid(),
   caption: z.string(),
-  url: z.string(),
-  userId: z.uuid(),
-  userName: z.string(),
-  userAvatar: z.string().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  image_url: z.string(),
+  user_id: z.string().uuid(),
+  user_name: z.string(),
+  user_avatar: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
 })
 
 export type CreateFeedBody = z.infer<typeof CreateFeedBodySchema>
