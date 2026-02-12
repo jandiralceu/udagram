@@ -69,7 +69,23 @@ jobs:
         run: npm ci
 
       - name: Run tests on affected packages
-        run: npx turbo run test --filter=...[origin/main]
+        run: npx turbo run test:coverage --filter=...[origin/main]
+
+      - name: Upload API User Coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: apps/udagram-api-user/coverage/lcov.info
+          flags: api-user
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload API Feed Coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: apps/udagram-api-feed/coverage/lcov.info
+          flags: api-feed
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     name: 🏗️ Build
