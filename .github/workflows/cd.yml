@@ -38,10 +38,16 @@ jobs:
               - 'packages/user-grpc/**'
               - 'packages/logger-config/**'
               - 'packages/fastify-dynamo-plugin/**'
+              - 'packages/aws-uploader/**'
+              - 'packages/pubsub/**'
+              - 'packages/secrets-manager/**'
             api-feed:
               - 'apps/udagram-api-feed/**'
               - 'packages/user-grpc/**'
               - 'packages/logger-config/**'
+              - 'packages/aws-uploader/**'
+              - 'packages/pubsub/**'
+              - 'packages/secrets-manager/**'
             frontend:
               - 'apps/udagram-frontend/**'
 
@@ -59,7 +65,15 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Build all packages
