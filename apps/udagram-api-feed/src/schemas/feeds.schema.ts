@@ -40,6 +40,18 @@ export const CreateFeedMultipartSchema = z.object({
   }),
 })
 
+export const FeedResponseSchema = z.object({
+  id: z.uuid(),
+  caption: z.string(),
+  url: z.string(),
+  userId: z.uuid(),
+  userName: z.string(),
+  userAvatar: z.string().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})
+
 export type CreateFeedBody = z.infer<typeof CreateFeedBodySchema>
 export type GetFeedParams = z.infer<typeof GetFeedParamsSchema>
 export type CreateFeedMultipart = z.infer<typeof CreateFeedMultipartSchema>
+export type FeedResponse = z.infer<typeof FeedResponseSchema>

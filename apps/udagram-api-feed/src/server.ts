@@ -6,10 +6,13 @@ import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import fastifyJwt from '@fastify/jwt'
 import fastifyMultipart from '@fastify/multipart'
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
 import {
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
+  jsonSchemaTransform,
 } from 'fastify-type-provider-zod'
 
 import logger from '@udagram/logger-config'
@@ -53,6 +56,32 @@ export async function buildServer() {
     schema,
     dotenv: true,
   } as FastifyEnvOptions)
+
+  // 1.5 Swagger Configuration
+  await fastify.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'Udagram Feed API',
+        description: 'Feed management service for Udagram application',
+        version: '1.0.0',
+      },
+      servers: [],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+    },
+    transform: jsonSchemaTransform,
+  })
+
+  await fastify.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+  })
 
   // 2. JWT Verification Setup (Public Key only for Feed API)
   let jwtPublicKey: string
@@ -111,7 +140,7 @@ export async function buildServer() {
   fastify.setSerializerCompiler(serializerCompiler)
 
   // 5. Route Registration
-  fastify.get('/health', async () => ({
+  fastify.get('/health', { schema: { hide: true } }, async () => ({
     app: fastify.config.APP_NAME,
     status: 'healthy',
   }))

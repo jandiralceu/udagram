@@ -1,8 +1,11 @@
+import { z } from 'zod'
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
-
 import * as feedController from '../../controllers/feeds.controller.js'
-import { GetFeedParamsSchema } from '../../schemas/feeds.schema.js'
+import {
+  GetFeedParamsSchema,
+  FeedResponseSchema,
+} from '../../schemas/feeds.schema.js'
 
 export default async function feedRoutes(
   fastify: FastifyInstance,
@@ -12,25 +15,75 @@ export default async function feedRoutes(
 
   fastify.addHook('onRequest', fastify.authenticate)
 
-  app.get('', feedController.getFeeds)
+  app.get(
+    '',
+    {
+      schema: {
+        description: 'List all feeds',
+        tags: ['Feeds'],
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: z.array(FeedResponseSchema),
+        },
+      },
+    },
+    feedController.getFeeds
+  )
 
   app.get(
     '/:feedId',
     {
       schema: {
+        description: 'Get a specific feed by ID',
+        tags: ['Feeds'],
+        security: [{ bearerAuth: [] }],
         params: GetFeedParamsSchema,
+        response: {
+          200: FeedResponseSchema,
+          404: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     feedController.getFeedById
   )
 
-  app.post('', feedController.createFeed)
+  app.post(
+    '',
+    {
+      schema: {
+        description: 'Create a new feed',
+        tags: ['Feeds'],
+        security: [{ bearerAuth: [] }],
+        consumes: ['multipart/form-data'],
+        body: z.object({
+          caption: z.string(),
+          file: z.any().describe('Binary file data'),
+        }),
+        response: {
+          201: FeedResponseSchema,
+          400: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    feedController.createFeed
+  )
 
   app.delete(
     '/:feedId',
     {
       schema: {
+        description: 'Delete a feed by ID',
+        tags: ['Feeds'],
         params: GetFeedParamsSchema,
+        response: {
+          200: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     feedController.deleteFeed
