@@ -57,10 +57,9 @@ export default async function feedRoutes(
         tags: ['Feeds'],
         security: [{ bearerAuth: [] }],
         consumes: ['multipart/form-data'],
-        body: z.object({
-          caption: z.string(),
-          file: z.any().describe('Binary file data'),
-        }),
+        body: z
+          .any()
+          .describe('Multipart data: caption (string), file (binary)'),
         response: {
           201: FeedResponseSchema,
           400: z.object({
