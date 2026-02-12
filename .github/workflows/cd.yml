@@ -41,6 +41,10 @@ jobs:
               - 'packages/aws-uploader/**'
               - 'packages/pubsub/**'
               - 'packages/secrets-manager/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'turbo.json'
+              - '.github/workflows/cd.yml'
             api-feed:
               - 'apps/udagram-api-feed/**'
               - 'packages/user-grpc/**'
@@ -48,8 +52,16 @@ jobs:
               - 'packages/aws-uploader/**'
               - 'packages/pubsub/**'
               - 'packages/secrets-manager/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'turbo.json'
+              - '.github/workflows/cd.yml'
             frontend:
               - 'apps/udagram-frontend/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'turbo.json'
+              - '.github/workflows/cd.yml'
 
   build:
     name: 🏗️ Build
