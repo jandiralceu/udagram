@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker'
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 
 import { buildServer } from '../../server.js'
+import { usersTable } from '../../db/schema.js'
 import * as userService from '../../services/users.service.js'
 
 // Mock external dependencies
@@ -45,9 +46,9 @@ describe('Users GRPC Service', () => {
       'DB_CONNECTION_STRING',
       'postgresql://user:pass@localhost:5432/db'
     )
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
-    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
     vi.stubEnv(
       'AWS_SNS_TOPIC_ARN',
       'arn:aws:sns:us-east-1:000000000000:test-topic'
@@ -82,7 +83,7 @@ describe('Users GRPC Service', () => {
         id: faker.string.uuid(),
         name: faker.person.fullName(),
         email: faker.internet.email(),
-        password: 'hashed-password',
+        password: faker.internet.jwt(),
         avatar: faker.image.avatar(),
         created_at: new Date(),
         updated_at: new Date(),
@@ -174,7 +175,9 @@ describe('Users GRPC Service', () => {
         updated_at: new Date(),
       }
 
-      vi.mocked(userService.getUserById).mockResolvedValue(mockUser as any)
+      vi.mocked(userService.getUserById).mockResolvedValue(
+        mockUser as typeof usersTable.$inferSelect
+      )
 
       const response = await app.inject({
         method: 'POST',

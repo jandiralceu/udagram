@@ -46,7 +46,7 @@ describe('Users Service', () => {
     id: faker.string.uuid(),
     name: faker.person.fullName(),
     email: faker.internet.email(),
-    password: 'hashed-password',
+    password: faker.internet.password(),
     avatar: faker.image.avatar(),
     created_at: new Date(),
     updated_at: new Date(),
@@ -71,7 +71,7 @@ describe('Users Service', () => {
     it('should return undefined if not found', async () => {
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue(undefined)
 
-      const result = await usersService.getUserById('non-existent')
+      const result = await usersService.getUserById(faker.string.uuid())
 
       expect(result).toBeUndefined()
     })
@@ -80,7 +80,7 @@ describe('Users Service', () => {
   describe('create', () => {
     it('should create user successfully', async () => {
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue(undefined) // No existing user
-      vi.mocked(hashPassword).mockResolvedValue('hashed-password')
+      vi.mocked(hashPassword).mockResolvedValue(faker.internet.password())
 
       const mockInsertBuilder = {
         values: vi.fn().mockReturnThis(),
@@ -90,11 +90,13 @@ describe('Users Service', () => {
         mockInsertBuilder as unknown as ReturnType<typeof db.insert>
       )
 
+      const password = faker.internet.password()
+
       const userData = {
         email: mockUser.email,
-        password: 'password123',
+        password,
         name: mockUser.name,
-        confirmPassword: 'password123',
+        confirmPassword: password,
       }
 
       const result = await usersService.create(
@@ -102,7 +104,7 @@ describe('Users Service', () => {
       )
 
       expect(result).toEqual(mockUser)
-      expect(hashPassword).toHaveBeenCalledWith('password123')
+      expect(hashPassword).toHaveBeenCalledWith(password)
       expect(db.insert).toHaveBeenCalled()
     })
 
@@ -113,7 +115,7 @@ describe('Users Service', () => {
 
       const userData = {
         email: mockUser.email,
-        password: 'password123',
+        password: faker.internet.password(),
         name: mockUser.name,
       }
 
@@ -125,22 +127,21 @@ describe('Users Service', () => {
 
   describe('updateUser', () => {
     it('should update user name', async () => {
+      const newName = faker.person.fullName()
       const mockUpdateBuilder = {
         set: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
-        returning: vi
-          .fn()
-          .mockResolvedValue([{ ...mockUser, name: 'New Name' }]),
+        returning: vi.fn().mockResolvedValue([{ ...mockUser, name: newName }]),
       }
       vi.mocked(db.update).mockReturnValue(
         mockUpdateBuilder as unknown as ReturnType<typeof db.update>
       )
 
       const result = await usersService.updateUser(mockUser.id, {
-        name: 'New Name',
+        name: newName,
       })
 
-      expect(result?.name).toBe('New Name')
+      expect(result?.name).toBe(newName)
       expect(db.update).toHaveBeenCalled()
       expect(publishUserEvent).toHaveBeenCalledWith(
         'UserUpdated',
@@ -149,25 +150,24 @@ describe('Users Service', () => {
     })
 
     it('should update password with hashing', async () => {
-      vi.mocked(hashPassword).mockResolvedValue('new-hashed-password')
+      const newHashedPassword = faker.internet.password()
+      vi.mocked(hashPassword).mockResolvedValue(newHashedPassword)
       const mockUpdateBuilder = {
         set: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         returning: vi
           .fn()
-          .mockResolvedValue([
-            { ...mockUser, password: 'new-hashed-password' },
-          ]),
+          .mockResolvedValue([{ ...mockUser, password: newHashedPassword }]),
       }
       vi.mocked(db.update).mockReturnValue(
         mockUpdateBuilder as unknown as ReturnType<typeof db.update>
       )
+      const newPassword = faker.internet.password()
+      await usersService.updateUser(mockUser.id, { password: newPassword })
 
-      await usersService.updateUser(mockUser.id, { password: 'new-password' })
-
-      expect(hashPassword).toHaveBeenCalledWith('new-password')
+      expect(hashPassword).toHaveBeenCalledWith(newPassword)
       expect(mockUpdateBuilder.set).toHaveBeenCalledWith(
-        expect.objectContaining({ password: 'new-hashed-password' })
+        expect.objectContaining({ password: newHashedPassword })
       )
     })
 
@@ -197,7 +197,9 @@ describe('Users Service', () => {
         mockUpdateBuilder as unknown as ReturnType<typeof db.update>
       )
 
-      await usersService.updateUser(mockUser.id, { name: 'New Name' })
+      await usersService.updateUser(mockUser.id, {
+        name: faker.person.fullName(),
+      })
 
       expect(publishUserEvent).not.toHaveBeenCalled()
     })
@@ -219,7 +221,7 @@ describe('Users Service', () => {
       )
 
       // Mock upload
-      const mockUrl = 'https://bucket.s3.amazonaws.com/avatars/new.png'
+      const mockUrl = faker.image.avatar()
       vi.mocked(s3Service.upload).mockResolvedValue({
         url: mockUrl,
         key: 'avatars/new.png',
@@ -242,20 +244,14 @@ describe('Users Service', () => {
         filename: 'test.png',
         mimetype: 'image/png',
       }
-      const result = await usersService.updateAvatar(
-        mockUser.id,
-        'test-bucket',
-        file
-      )
+      const bucket = faker.lorem.word()
+      const result = await usersService.updateAvatar(mockUser.id, bucket, file)
 
       expect(result?.avatar).toBe(mockUrl)
       expect(s3Service.upload).toHaveBeenCalled()
 
       // Should delete old avatar if exists
-      expect(s3Service.deleteFile).toHaveBeenCalledWith(
-        'test-bucket',
-        mockUser.avatar
-      )
+      expect(s3Service.deleteFile).toHaveBeenCalledWith(bucket, mockUser.avatar)
     })
 
     it('should handle s3 delete error gracefully', async () => {
@@ -265,7 +261,7 @@ describe('Users Service', () => {
       )
 
       // Mock upload
-      const mockUrl = 'https://bucket.s3.amazonaws.com/avatars/new.png'
+      const mockUrl = faker.image.avatar()
       vi.mocked(s3Service.upload).mockResolvedValue({
         url: mockUrl,
         key: 'avatars/new.png',
@@ -285,7 +281,7 @@ describe('Users Service', () => {
 
       // Mock delete failure
       vi.mocked(s3Service.deleteFile).mockRejectedValue(
-        new Error('Delete failed')
+        new Error(faker.lorem.sentence())
       )
 
       const file = {
@@ -295,7 +291,7 @@ describe('Users Service', () => {
       }
       const result = await usersService.updateAvatar(
         mockUser.id,
-        'test-bucket',
+        faker.lorem.word(),
         file
       )
 
@@ -309,7 +305,7 @@ describe('Users Service', () => {
         mockUser as User
       )
 
-      const mockUrl = 'https://bucket.s3.amazonaws.com/avatars/new.png'
+      const mockUrl = faker.image.avatar()
       vi.mocked(s3Service.upload).mockResolvedValue({
         url: mockUrl,
         key: 'avatars/new.png',
@@ -328,7 +324,7 @@ describe('Users Service', () => {
 
       // Mock delete failure with UploaderError
       vi.mocked(s3Service.deleteFile).mockRejectedValue(
-        new UploaderError('S3 Error')
+        new UploaderError(faker.lorem.sentence())
       )
 
       const file = {
@@ -336,9 +332,13 @@ describe('Users Service', () => {
         filename: 'test.png',
         mimetype: 'image/png',
       }
-      await usersService.updateAvatar(mockUser.id, 'test-bucket', file)
+      const result = await usersService.updateAvatar(
+        mockUser.id,
+        faker.lorem.word(),
+        file
+      )
 
-      // Should satisfy the 'if (error instanceof UploaderError)' branch
+      expect(result?.avatar).toBe(mockUrl)
     })
 
     it('should not delete old avatar if not present', async () => {

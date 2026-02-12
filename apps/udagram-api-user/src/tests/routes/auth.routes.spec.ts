@@ -55,14 +55,14 @@ describe('Auth Routes', () => {
       'DB_CONNECTION_STRING',
       'postgresql://user:pass@localhost:5432/db'
     )
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
-    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
     vi.stubEnv(
       'AWS_SNS_TOPIC_ARN',
       'arn:aws:sns:us-east-1:000000000000:test-topic'
     )
-    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
     app = await buildServer()
     app.decorate('dynamo', {
@@ -92,10 +92,12 @@ describe('Auth Routes', () => {
         mockUser as unknown as Awaited<ReturnType<typeof usersService.create>>
       )
 
+      const password = faker.internet.password()
+
       const payload = {
         email: mockUser.email,
-        password: 'password123',
-        confirmPassword: 'password123',
+        password,
+        confirmPassword: password,
         name: mockUser.name,
       }
 
@@ -119,10 +121,12 @@ describe('Auth Routes', () => {
         new Error('User already exists')
       )
 
+      const password = faker.internet.password()
+
       const payload = {
         email: faker.internet.email(),
-        password: 'password123',
-        confirmPassword: 'password123',
+        password,
+        confirmPassword: password,
         name: faker.person.fullName(),
       }
 
@@ -137,13 +141,15 @@ describe('Auth Routes', () => {
 
     it('should throw generic error if create fails', async () => {
       vi.mocked(usersService.create).mockRejectedValue(
-        new Error('Database error')
+        new Error(faker.lorem.sentence())
       )
+
+      const password = faker.internet.password()
 
       const payload = {
         email: faker.internet.email(),
-        password: 'password123',
-        confirmPassword: 'password123',
+        password,
+        confirmPassword: password,
         name: faker.person.fullName(),
       }
 
@@ -163,7 +169,7 @@ describe('Auth Routes', () => {
       const mockUser = {
         id: faker.string.uuid(),
         email: faker.internet.email(),
-        password: 'hashed-password',
+        password: faker.internet.jwt(),
       }
 
       vi.mocked(usersService.getUserByEmail).mockResolvedValue(
@@ -175,7 +181,7 @@ describe('Auth Routes', () => {
 
       const payload = {
         email: mockUser.email,
-        password: 'password123',
+        password: faker.internet.password(),
       }
 
       const response = await app.inject({
@@ -196,7 +202,7 @@ describe('Auth Routes', () => {
 
       const payload = {
         email: faker.internet.email(),
-        password: 'password123',
+        password: faker.internet.password(),
       }
 
       const response = await app.inject({
@@ -212,7 +218,7 @@ describe('Auth Routes', () => {
       const mockUser = {
         id: faker.string.uuid(),
         email: faker.internet.email(),
-        password: 'hashed-password',
+        password: faker.internet.jwt(),
       }
 
       vi.mocked(usersService.getUserByEmail).mockResolvedValue(
@@ -224,7 +230,7 @@ describe('Auth Routes', () => {
 
       const payload = {
         email: mockUser.email,
-        password: 'wrongpassword',
+        password: faker.internet.password(),
       }
 
       const response = await app.inject({
@@ -267,7 +273,7 @@ describe('Auth Routes', () => {
 
     it('should return 401 on invalid token signature', async () => {
       const payload = {
-        refreshToken: 'invalid-token',
+        refreshToken: faker.internet.jwt(),
       }
 
       const response = await app.inject({

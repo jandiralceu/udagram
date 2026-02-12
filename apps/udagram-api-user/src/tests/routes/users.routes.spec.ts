@@ -1,3 +1,7 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import type { FastifyInstance } from 'fastify'
 import {
   describe,
   it,
@@ -7,13 +11,10 @@ import {
   afterAll,
   afterEach,
 } from 'vitest'
-import { buildServer } from '../../server.js'
 import { faker } from '@faker-js/faker'
-import type { FastifyInstance } from 'fastify'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import jwt from 'jsonwebtoken'
-import fs from 'node:fs'
+
+import { buildServer } from '../../server.js'
 import * as usersService from '../../services/users.service.js'
 
 // Mock external dependencies
@@ -74,14 +75,14 @@ describe('Users Routes', () => {
       'DB_CONNECTION_STRING',
       'postgresql://user:pass@localhost:5432/db'
     )
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
-    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
     vi.stubEnv(
       'AWS_SNS_TOPIC_ARN',
       'arn:aws:sns:us-east-1:000000000000:test-topic'
     )
-    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
     app = await buildServer()
     app.decorate('dynamo', {
@@ -113,8 +114,12 @@ describe('Users Routes', () => {
     })
 
     it('should return user profile', async () => {
-      const mockUser = { id: testUserId, name: 'Test User' }
-      vi.mocked(usersService.getUserById).mockResolvedValue(mockUser as any)
+      const mockUser = { id: testUserId, name: faker.person.fullName() }
+      vi.mocked(usersService.getUserById).mockResolvedValue(
+        mockUser as unknown as Awaited<
+          ReturnType<typeof usersService.getUserById>
+        >
+      )
 
       const response = await app.inject({
         method: 'GET',
@@ -143,8 +148,12 @@ describe('Users Routes', () => {
   describe('GET /api/v1/users/:userId', () => {
     it('should return user by id', async () => {
       const targetUserId = faker.string.uuid()
-      const mockUser = { id: targetUserId, name: 'Target User' }
-      vi.mocked(usersService.getUserById).mockResolvedValue(mockUser as any)
+      const mockUser = { id: targetUserId, name: faker.person.fullName() }
+      vi.mocked(usersService.getUserById).mockResolvedValue(
+        mockUser as unknown as Awaited<
+          ReturnType<typeof usersService.getUserById>
+        >
+      )
 
       const response = await app.inject({
         method: 'GET',
@@ -174,21 +183,25 @@ describe('Users Routes', () => {
 
   describe('PATCH /api/v1/users', () => {
     it('should update user', async () => {
-      const updatedUser = { id: testUserId, name: 'Updated Name' }
-      vi.mocked(usersService.updateUser).mockResolvedValue(updatedUser as any)
+      const updatedUser = { id: testUserId, name: faker.person.fullName() }
+      vi.mocked(usersService.updateUser).mockResolvedValue(
+        updatedUser as unknown as Awaited<
+          ReturnType<typeof usersService.updateUser>
+        >
+      )
 
       const response = await app.inject({
         method: 'PATCH',
         url: '/api/v1/users',
         headers: { authorization: `Bearer ${authToken}` },
-        payload: { name: 'Updated Name' },
+        payload: { name: updatedUser.name },
       })
 
       expect(response.statusCode).toBe(200)
       const body = JSON.parse(response.payload)
       expect(body).toEqual(updatedUser)
       expect(usersService.updateUser).toHaveBeenCalledWith(testUserId, {
-        name: 'Updated Name',
+        name: updatedUser.name,
       })
     })
   })
@@ -212,8 +225,8 @@ describe('Users Routes', () => {
   describe('DELETE /api/v1/users', () => {
     it('should delete user', async () => {
       vi.mocked(usersService.deleteUser).mockResolvedValue({
-        message: 'User deleted',
-      } as any)
+        message: faker.lorem.sentence(),
+      })
 
       const response = await app.inject({
         method: 'DELETE',

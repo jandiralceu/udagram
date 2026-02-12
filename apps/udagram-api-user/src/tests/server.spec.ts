@@ -1,9 +1,12 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
-import { buildServer } from '../server.js'
-import { getSecret } from '@udagram/secrets-manager'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import fs from 'node:fs'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { faker } from '@faker-js/faker'
+
+import { getSecret } from '@udagram/secrets-manager'
+
+import { buildServer } from '../server.js'
 
 // Mock external dependencies to avoid starting real connections
 vi.mock('@udagram/fastify-dynamo-plugin', () => ({
@@ -18,6 +21,7 @@ vi.mock('@udagram/secrets-manager', () => ({
 describe('Server', () => {
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
+  const defaultRegion = 'us-east-1'
 
   afterEach(() => {
     vi.unstubAllEnvs()
@@ -32,14 +36,14 @@ describe('Server', () => {
       'DB_CONNECTION_STRING',
       'postgresql://user:pass@localhost:5432/db'
     )
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
-    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
     vi.stubEnv(
       'AWS_SNS_TOPIC_ARN',
-      'arn:aws:sns:us-east-1:000000000000:test-topic'
+      `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
     )
-    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
     const app = await buildServer()
     const response = await app.inject({
@@ -61,14 +65,14 @@ describe('Server', () => {
       'DB_CONNECTION_STRING',
       'postgresql://user:pass@localhost:5432/db'
     )
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
-    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
     vi.stubEnv(
       'AWS_SNS_TOPIC_ARN',
-      'arn:aws:sns:us-east-1:000000000000:test-topic'
+      `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
     )
-    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
     const app = await buildServer()
     await app.ready()
@@ -76,20 +80,21 @@ describe('Server', () => {
   })
 
   it('should start with keys from AWS Secrets Manager', async () => {
-    vi.stubEnv('JWT_SECRET_NAME', 'test-secret')
+    const secretName = faker.string.uuid()
+    vi.stubEnv('JWT_SECRET_NAME', secretName)
 
     vi.stubEnv(
       'DB_CONNECTION_STRING',
       'postgresql://user:pass@localhost:5432/db'
     )
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
-    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
     vi.stubEnv(
       'AWS_SNS_TOPIC_ARN',
-      'arn:aws:sns:us-east-1:000000000000:test-topic'
+      `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
     )
-    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
     vi.mocked(getSecret).mockResolvedValue({
       private: fs.readFileSync(
@@ -103,6 +108,6 @@ describe('Server', () => {
     await app.ready()
     await app.close()
 
-    expect(getSecret).toHaveBeenCalledWith('test-secret', 'us-east-1')
+    expect(getSecret).toHaveBeenCalledWith(secretName, defaultRegion)
   })
 })
