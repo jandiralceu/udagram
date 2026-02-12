@@ -1,24 +1,23 @@
 import 'dotenv/config'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
-import { PubSubClient, PubSubEvents } from '@udagram/pubsub'
-
 import fastifyJwt from '@fastify/jwt'
+import fastifyMultipart from '@fastify/multipart'
 import {
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
-import fastifyMultipart from '@fastify/multipart'
-
-import fs from 'node:fs'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import logger from '@udagram/logger-config'
+import { PubSubClient, PubSubEvents } from '@udagram/pubsub'
+import { getSecret, formatAsPem } from '@udagram/secrets-manager'
 
-import feedRoutes from './routes/v1/feed.js'
 import schema, { type EnvConfig } from './config/env.js'
+import feedRoutes from './routes/v1/feed.js'
 import { updateUserInfo } from './services/feeds.service.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -34,31 +33,61 @@ declare module 'fastify' {
   }
 }
 
-// Export buildServer for testing
+interface JwtKeys {
+  public: string
+}
+
+/**
+ * Builds the Fastify server instance for the Feed API.
+ * Configures environment, JWT verification (public key only), SQS polling and routes.
+ *
+ * @returns Object containing the fastify instance and the pubSubClient
+ */
 export async function buildServer() {
   const fastify = Fastify({
     logger: logger[process.env.NODE_ENV as keyof typeof logger],
   }).withTypeProvider<ZodTypeProvider>()
 
-  // Register the environment plugin
+  // 1. Environment Configuration
   await fastify.register(fastifyEnv, {
     schema,
     dotenv: true,
   } as FastifyEnvOptions)
 
-  // Register JWT plugin
-  await fastify.register(fastifyJwt, {
-    secret: {
-      public: fs.readFileSync(
+  // 2. JWT Verification Setup (Public Key only for Feed API)
+  let jwtPublicKey: string
+
+  if (fastify.config.JWT_SECRET_NAME) {
+    // Load public key from AWS Secrets Manager
+    const keys = await getSecret<JwtKeys>(
+      fastify.config.JWT_SECRET_NAME,
+      fastify.config.AWS_REGION
+    )
+    jwtPublicKey = formatAsPem(keys.public, 'PUBLIC KEY')
+  } else {
+    // Fallback to local public key file
+    if (!fastify.config.JWT_PUBLIC_KEY_FILE) {
+      throw new Error(
+        'Either JWT_SECRET_NAME or JWT_PUBLIC_KEY_FILE must be provided'
+      )
+    }
+    jwtPublicKey = formatAsPem(
+      fs.readFileSync(
         path.isAbsolute(fastify.config.JWT_PUBLIC_KEY_FILE)
           ? fastify.config.JWT_PUBLIC_KEY_FILE
           : path.join(__dirname, fastify.config.JWT_PUBLIC_KEY_FILE),
         'utf8'
       ),
-    },
+      'PUBLIC KEY'
+    )
+  }
+
+  await fastify.register(fastifyJwt, {
+    secret: { public: jwtPublicKey },
     sign: { algorithm: 'RS256' },
   })
 
+  // Auth decorator for route protection
   fastify.decorate(
     'authenticate',
     async function (request: FastifyRequest, reply: FastifyReply) {
@@ -70,37 +99,46 @@ export async function buildServer() {
     }
   )
 
-  // Register multipart plugin for file uploads
+  // 3. Storage & Multipart Setup
   await fastify.register(fastifyMultipart, {
     limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB limit for posts (higher than avatars)
+      fileSize: 10 * 1024 * 1024, // 10MB limit for feed posts
     },
   })
 
+  // 4. Compilers & Global Settings
   fastify.setValidatorCompiler(validatorCompiler)
   fastify.setSerializerCompiler(serializerCompiler)
 
-  fastify.get('/health', async function handler(_request, _reply) {
-    return { app: fastify.config.APP_NAME }
-  })
+  // 5. Route Registration
+  fastify.get('/health', async () => ({
+    app: fastify.config.APP_NAME,
+    status: 'healthy',
+  }))
 
   fastify.register(feedRoutes, { prefix: '/api/v1/feeds' })
 
-  // Initialize PubSub (but don't start polling here to avoid side effects in tests)
-  // We can start polling in the listen callback or separate start function
+  // 6. Messaging (SQS) Initialization
   const pubSubClient = new PubSubClient(fastify.config.AWS_REGION)
 
   return { fastify, pubSubClient }
 }
 
-// Function to start the server
+/**
+ * Server Execution Block
+ */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     const { fastify, pubSubClient } = await buildServer()
 
-    await fastify.listen({ port: fastify.config.PORT, host: '0.0.0.0' })
+    const address = await fastify.listen({
+      port: fastify.config.PORT,
+      host: '0.0.0.0',
+    })
 
-    // Start polling for events in the background
+    console.info(`\n🚀 Feed API Server listening at ${address}\n`)
+
+    // Start background event polling
     pubSubClient.poll(
       fastify.config.AWS_SQS_QUEUE_URL,
       async (eventType: string, data: unknown) => {
@@ -110,15 +148,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
             name: string
             avatar: string | null
           }
-          console.log(
-            `[Feed Service] Received UserUpdated event for user ${userData.id}`
-          )
+          console.log(`[Feed Service] Synced user data for ${userData.id}`)
           await updateUserInfo(userData.id, userData)
         }
       }
     )
   } catch (err) {
-    console.error(err)
+    console.error('Failed to start Feed API:', err)
     process.exit(1)
   }
 }

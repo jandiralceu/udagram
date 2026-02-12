@@ -1,0 +1,24 @@
+{
+  "name": "@udagram/secrets-manager",
+  "version": "1.0.0",
+  "description": "Shared utility for AWS Secrets Manager",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.988.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "author": "J. A. Cutabiala <jandiralceu@gmail.com>",
+  "license": "ISC",
+  "type": "module"
+}

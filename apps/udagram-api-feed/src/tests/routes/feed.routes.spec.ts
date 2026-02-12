@@ -63,6 +63,7 @@ describe('Feed Routes', () => {
       'JWT_PUBLIC_KEY_FILE',
       path.join(__dirname, '../public_test.pem')
     )
+    vi.stubEnv('JWT_SECRET_NAME', '')
 
     const server = await buildServer()
     app = server.fastify
@@ -79,7 +80,7 @@ describe('Feed Routes', () => {
   })
 
   afterAll(async () => {
-    await app.close()
+    if (app) await app.close()
     vi.unstubAllEnvs()
   })
 

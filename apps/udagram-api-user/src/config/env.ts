@@ -6,8 +6,6 @@ const schema = {
     'AWS_SECRET_ACCESS_KEY',
     'AWS_BUCKET',
     'AWS_SNS_TOPIC_ARN',
-    'JWT_PUBLIC_KEY_FILE',
-    'JWT_PRIVATE_KEY_FILE',
     'GRPC_INTERNAL_TOKEN',
   ],
   properties: {
@@ -22,6 +20,7 @@ const schema = {
     AWS_SNS_TOPIC_ARN: { type: 'string' },
     JWT_PUBLIC_KEY_FILE: { type: 'string' },
     JWT_PRIVATE_KEY_FILE: { type: 'string' },
+    JWT_SECRET_NAME: { type: 'string' },
     GRPC_INTERNAL_TOKEN: { type: 'string' },
   },
 } as const
@@ -36,8 +35,9 @@ export interface EnvConfig {
   AWS_REGION: string
   AWS_BUCKET: string
   AWS_SNS_TOPIC_ARN: string
-  JWT_PUBLIC_KEY_FILE: string
-  JWT_PRIVATE_KEY_FILE: string
+  JWT_PUBLIC_KEY_FILE?: string
+  JWT_PRIVATE_KEY_FILE?: string
+  JWT_SECRET_NAME?: string
   GRPC_INTERNAL_TOKEN: string
 }
 

@@ -7,7 +7,6 @@ const schema = {
     'AWS_SECRET_ACCESS_KEY',
     'AWS_BUCKET',
     'AWS_SQS_QUEUE_URL',
-    'JWT_PUBLIC_KEY_FILE',
     'GRPC_INTERNAL_TOKEN',
   ],
   properties: {
@@ -21,6 +20,7 @@ const schema = {
     AWS_BUCKET: { type: 'string' },
     AWS_SQS_QUEUE_URL: { type: 'string' },
     JWT_PUBLIC_KEY_FILE: { type: 'string' },
+    JWT_SECRET_NAME: { type: 'string' },
     GRPC_INTERNAL_TOKEN: { type: 'string' },
   },
 } as const
@@ -35,7 +35,8 @@ export interface EnvConfig {
   AWS_REGION: string
   AWS_BUCKET: string
   AWS_SQS_QUEUE_URL: string
-  JWT_PUBLIC_KEY_FILE: string
+  JWT_PUBLIC_KEY_FILE?: string
+  JWT_SECRET_NAME?: string
   GRPC_INTERNAL_TOKEN: string
 }
 

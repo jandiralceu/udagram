@@ -65,13 +65,29 @@ describe('Users Routes', () => {
       'JWT_PUBLIC_KEY_FILE',
       path.join(__dirname, '../public_test.pem')
     )
+    vi.stubEnv('JWT_SECRET_NAME', '')
     vi.stubEnv(
       'JWT_PRIVATE_KEY_FILE',
       path.join(__dirname, '../private_test.pem')
     )
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
+    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
+    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv(
+      'AWS_SNS_TOPIC_ARN',
+      'arn:aws:sns:us-east-1:000000000000:test-topic'
+    )
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
 
     app = await buildServer()
-    app.decorate('dynamo', { doc: 'mock-doc' }) // Dynamo plugin bypass
+    app.decorate('dynamo', {
+      client: {} as unknown as FastifyInstance['dynamo']['client'],
+      doc: {} as unknown as FastifyInstance['dynamo']['doc'],
+    }) // Dynamo plugin bypass
 
     // Generate valid token for default test user
     authToken = generateToken(testUserId)
@@ -82,7 +98,7 @@ describe('Users Routes', () => {
   })
 
   afterAll(async () => {
-    await app.close()
+    if (app) await app.close()
     vi.unstubAllEnvs()
   })
 

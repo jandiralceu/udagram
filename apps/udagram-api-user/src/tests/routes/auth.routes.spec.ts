@@ -24,7 +24,10 @@ vi.mock('../../services/password.service.js', () => ({
 
 vi.mock('@udagram/fastify-dynamo-plugin', () => ({
   default: vi.fn(async (fastify: FastifyInstance) => {
-    fastify.decorate('dynamo', { doc: 'mock-doc' })
+    fastify.decorate('dynamo', {
+      client: {} as unknown as FastifyInstance['dynamo']['client'],
+      doc: {} as unknown as FastifyInstance['dynamo']['doc'],
+    })
   }),
   putItem: vi.fn(),
   getItem: vi.fn(),
@@ -43,18 +46,34 @@ describe('Auth Routes', () => {
       'JWT_PUBLIC_KEY_FILE',
       path.join(__dirname, '../public_test.pem')
     )
+    vi.stubEnv('JWT_SECRET_NAME', '')
     vi.stubEnv(
       'JWT_PRIVATE_KEY_FILE',
       path.join(__dirname, '../private_test.pem')
     )
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
+    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
+    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv(
+      'AWS_SNS_TOPIC_ARN',
+      'arn:aws:sns:us-east-1:000000000000:test-topic'
+    )
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
 
     app = await buildServer()
-    app.decorate('dynamo', { doc: 'mock-doc' })
+    app.decorate('dynamo', {
+      client: {} as unknown as FastifyInstance['dynamo']['client'],
+      doc: {} as unknown as FastifyInstance['dynamo']['doc'],
+    })
     await app.ready()
   })
 
   afterAll(async () => {
-    await app.close()
+    if (app) await app.close()
     vi.unstubAllEnvs()
   })
 
@@ -69,7 +88,9 @@ describe('Auth Routes', () => {
         updated_at: new Date(),
       }
 
-      vi.mocked(usersService.create).mockResolvedValue(mockUser as any)
+      vi.mocked(usersService.create).mockResolvedValue(
+        mockUser as unknown as Awaited<ReturnType<typeof usersService.create>>
+      )
 
       const payload = {
         email: mockUser.email,
@@ -86,7 +107,9 @@ describe('Auth Routes', () => {
 
       expect(response.statusCode).toBe(201)
       expect(JSON.parse(response.payload)).toEqual({
-        ...JSON.parse(JSON.stringify(mockUser)),
+        ...structuredClone(mockUser),
+        created_at: mockUser.created_at.toISOString(),
+        updated_at: mockUser.updated_at.toISOString(),
       })
       expect(usersService.create).toHaveBeenCalled()
     })
@@ -143,7 +166,11 @@ describe('Auth Routes', () => {
         password: 'hashed-password',
       }
 
-      vi.mocked(usersService.getUserByEmail).mockResolvedValue(mockUser as any)
+      vi.mocked(usersService.getUserByEmail).mockResolvedValue(
+        mockUser as unknown as Awaited<
+          ReturnType<typeof usersService.getUserByEmail>
+        >
+      )
       vi.mocked(passwordService.verifyPassword).mockResolvedValue(true)
 
       const payload = {
@@ -188,7 +215,11 @@ describe('Auth Routes', () => {
         password: 'hashed-password',
       }
 
-      vi.mocked(usersService.getUserByEmail).mockResolvedValue(mockUser as any)
+      vi.mocked(usersService.getUserByEmail).mockResolvedValue(
+        mockUser as unknown as Awaited<
+          ReturnType<typeof usersService.getUserByEmail>
+        >
+      )
       vi.mocked(passwordService.verifyPassword).mockResolvedValue(false)
 
       const payload = {

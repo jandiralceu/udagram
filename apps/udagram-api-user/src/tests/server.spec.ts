@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { buildServer } from '../server.js'
+import { getSecret } from '@udagram/secrets-manager'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'node:fs'
@@ -7,6 +8,11 @@ import fs from 'node:fs'
 // Mock external dependencies to avoid starting real connections
 vi.mock('@udagram/fastify-dynamo-plugin', () => ({
   default: vi.fn(),
+}))
+
+vi.mock('@udagram/secrets-manager', () => ({
+  getSecret: vi.fn(),
+  formatAsPem: vi.fn(k => k),
 }))
 
 describe('Server', () => {
@@ -20,6 +26,20 @@ describe('Server', () => {
   it('health check returns app name', async () => {
     vi.stubEnv('JWT_PUBLIC_KEY_FILE', path.join(__dirname, 'public_test.pem'))
     vi.stubEnv('JWT_PRIVATE_KEY_FILE', path.join(__dirname, 'private_test.pem'))
+    vi.stubEnv('JWT_SECRET_NAME', '')
+
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
+    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
+    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv(
+      'AWS_SNS_TOPIC_ARN',
+      'arn:aws:sns:us-east-1:000000000000:test-topic'
+    )
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
 
     const app = await buildServer()
     const response = await app.inject({
@@ -33,23 +53,56 @@ describe('Server', () => {
   })
 
   it('should start with relative key paths', async () => {
-    // Determine relative path from server.ts location
-    // server.ts is in ../../src/server.ts relative to this test file?
-    // No, this test file is src/tests/server.spec.ts
-    // server.ts is src/server.ts
-    // keys are in src/tests/
-
-    // Config relative path: "tests/public_test.pem" (relative to src/?)
-    // In server.ts: path.join(__dirname, config.JWT...)
-    // __dirname of server.ts is src/
-    // So if I pass "tests/public_test.pem", it joins src/ + tests/public_test.pem -> src/tests/public_test.pem.
-    // This exists!
-
     vi.stubEnv('JWT_PUBLIC_KEY_FILE', 'tests/public_test.pem')
     vi.stubEnv('JWT_PRIVATE_KEY_FILE', 'tests/private_test.pem')
+    vi.stubEnv('JWT_SECRET_NAME', '')
+
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
+    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
+    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv(
+      'AWS_SNS_TOPIC_ARN',
+      'arn:aws:sns:us-east-1:000000000000:test-topic'
+    )
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
 
     const app = await buildServer()
     await app.ready()
     await app.close()
+  })
+
+  it('should start with keys from AWS Secrets Manager', async () => {
+    vi.stubEnv('JWT_SECRET_NAME', 'test-secret')
+
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
+    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
+    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv(
+      'AWS_SNS_TOPIC_ARN',
+      'arn:aws:sns:us-east-1:000000000000:test-topic'
+    )
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-grpc-token')
+
+    vi.mocked(getSecret).mockResolvedValue({
+      private: fs.readFileSync(
+        path.join(__dirname, 'private_test.pem'),
+        'utf8'
+      ),
+      public: fs.readFileSync(path.join(__dirname, 'public_test.pem'), 'utf8'),
+    })
+
+    const app = await buildServer()
+    await app.ready()
+    await app.close()
+
+    expect(getSecret).toHaveBeenCalledWith('test-secret', 'us-east-1')
   })
 })

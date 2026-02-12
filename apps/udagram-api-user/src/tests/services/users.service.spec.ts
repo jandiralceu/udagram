@@ -8,6 +8,9 @@ import { s3Service } from '../../lib/s3.js'
 import { publishUserEvent } from '../../lib/sns.js'
 import * as usersService from '../../services/users.service.js'
 import { hashPassword } from '../../services/password.service.js'
+import { usersTable } from '../../db/schema.js'
+
+type User = typeof usersTable.$inferSelect
 
 // Mock dependencies
 vi.mock('../../db/index.js', () => ({
@@ -56,7 +59,7 @@ describe('Users Service', () => {
   describe('getUserById', () => {
     it('should return user if found', async () => {
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue(
-        mockUser as any
+        mockUser as User
       )
 
       const result = await usersService.getUserById(mockUser.id)
@@ -83,7 +86,9 @@ describe('Users Service', () => {
         values: vi.fn().mockReturnThis(),
         returning: vi.fn().mockResolvedValue([mockUser]),
       }
-      vi.mocked(db.insert).mockReturnValue(mockInsertBuilder as any)
+      vi.mocked(db.insert).mockReturnValue(
+        mockInsertBuilder as unknown as ReturnType<typeof db.insert>
+      )
 
       const userData = {
         email: mockUser.email,
@@ -92,7 +97,9 @@ describe('Users Service', () => {
         confirmPassword: 'password123',
       }
 
-      const result = await usersService.create(userData as any)
+      const result = await usersService.create(
+        userData as typeof usersTable.$inferInsert
+      )
 
       expect(result).toEqual(mockUser)
       expect(hashPassword).toHaveBeenCalledWith('password123')
@@ -101,7 +108,7 @@ describe('Users Service', () => {
 
     it('should throw error if user exists', async () => {
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue(
-        mockUser as any
+        mockUser as User
       )
 
       const userData = {
@@ -110,9 +117,9 @@ describe('Users Service', () => {
         name: mockUser.name,
       }
 
-      await expect(usersService.create(userData as any)).rejects.toThrow(
-        'User already exists'
-      )
+      await expect(
+        usersService.create(userData as typeof usersTable.$inferInsert)
+      ).rejects.toThrow('User already exists')
     })
   })
 
@@ -125,13 +132,15 @@ describe('Users Service', () => {
           .fn()
           .mockResolvedValue([{ ...mockUser, name: 'New Name' }]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       const result = await usersService.updateUser(mockUser.id, {
         name: 'New Name',
       })
 
-      expect(result.name).toBe('New Name')
+      expect(result?.name).toBe('New Name')
       expect(db.update).toHaveBeenCalled()
       expect(publishUserEvent).toHaveBeenCalledWith(
         'UserUpdated',
@@ -150,7 +159,9 @@ describe('Users Service', () => {
             { ...mockUser, password: 'new-hashed-password' },
           ]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       await usersService.updateUser(mockUser.id, { password: 'new-password' })
 
@@ -166,7 +177,9 @@ describe('Users Service', () => {
         where: vi.fn().mockReturnThis(),
         returning: vi.fn().mockResolvedValue([mockUser]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       await usersService.updateUser(mockUser.id, {})
 
@@ -180,7 +193,9 @@ describe('Users Service', () => {
         where: vi.fn().mockReturnThis(),
         returning: vi.fn().mockResolvedValue([]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       await usersService.updateUser(mockUser.id, { name: 'New Name' })
 
@@ -200,12 +215,15 @@ describe('Users Service', () => {
     it('should upload new avatar and update user', async () => {
       // Mock current user
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue(
-        mockUser as any
+        mockUser as User
       )
 
       // Mock upload
       const mockUrl = 'https://bucket.s3.amazonaws.com/avatars/new.png'
-      vi.mocked(s3Service.upload).mockResolvedValue({ url: mockUrl } as any)
+      vi.mocked(s3Service.upload).mockResolvedValue({
+        url: mockUrl,
+        key: 'avatars/new.png',
+      })
 
       // Mock update
       const mockUpdateBuilder = {
@@ -215,7 +233,9 @@ describe('Users Service', () => {
           .fn()
           .mockResolvedValue([{ ...mockUser, avatar: mockUrl }]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       const file = {
         data: Buffer.from('test'),
@@ -228,7 +248,7 @@ describe('Users Service', () => {
         file
       )
 
-      expect(result.avatar).toBe(mockUrl)
+      expect(result?.avatar).toBe(mockUrl)
       expect(s3Service.upload).toHaveBeenCalled()
 
       // Should delete old avatar if exists
@@ -241,12 +261,15 @@ describe('Users Service', () => {
     it('should handle s3 delete error gracefully', async () => {
       // Mock current user
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue(
-        mockUser as any
+        mockUser as User
       )
 
       // Mock upload
       const mockUrl = 'https://bucket.s3.amazonaws.com/avatars/new.png'
-      vi.mocked(s3Service.upload).mockResolvedValue({ url: mockUrl } as any)
+      vi.mocked(s3Service.upload).mockResolvedValue({
+        url: mockUrl,
+        key: 'avatars/new.png',
+      })
 
       // Mock update
       const mockUpdateBuilder = {
@@ -256,7 +279,9 @@ describe('Users Service', () => {
           .fn()
           .mockResolvedValue([{ ...mockUser, avatar: mockUrl }]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       // Mock delete failure
       vi.mocked(s3Service.deleteFile).mockRejectedValue(
@@ -274,18 +299,21 @@ describe('Users Service', () => {
         file
       )
 
-      expect(result.avatar).toBe(mockUrl)
+      expect(result?.avatar).toBe(mockUrl)
       // should not throw
     })
 
     it('should handle UploaderError specifically', async () => {
       // Mock current user
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue(
-        mockUser as any
+        mockUser as User
       )
 
       const mockUrl = 'https://bucket.s3.amazonaws.com/avatars/new.png'
-      vi.mocked(s3Service.upload).mockResolvedValue({ url: mockUrl } as any)
+      vi.mocked(s3Service.upload).mockResolvedValue({
+        url: mockUrl,
+        key: 'avatars/new.png',
+      })
 
       const mockUpdateBuilder = {
         set: vi.fn().mockReturnThis(),
@@ -294,7 +322,9 @@ describe('Users Service', () => {
           .fn()
           .mockResolvedValue([{ ...mockUser, avatar: mockUrl }]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       // Mock delete failure with UploaderError
       vi.mocked(s3Service.deleteFile).mockRejectedValue(
@@ -316,11 +346,14 @@ describe('Users Service', () => {
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue({
         ...mockUser,
         avatar: null,
-      } as any)
+      })
 
       // Mock upload
       const mockUrl = 'https://bucket.s3.amazonaws.com/avatars/new.png'
-      vi.mocked(s3Service.upload).mockResolvedValue({ url: mockUrl } as any)
+      vi.mocked(s3Service.upload).mockResolvedValue({
+        url: mockUrl,
+        key: 'avatars/new.png',
+      })
 
       // Mock update
       const mockUpdateBuilder = {
@@ -330,7 +363,9 @@ describe('Users Service', () => {
           .fn()
           .mockResolvedValue([{ ...mockUser, avatar: mockUrl }]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       const file = {
         data: Buffer.from('test'),
@@ -345,12 +380,15 @@ describe('Users Service', () => {
     it('should not delete old avatar if user update fails (user not found)', async () => {
       // Mock current user
       vi.mocked(db.query.usersTable.findFirst).mockResolvedValue(
-        mockUser as any
+        mockUser as User
       )
 
       // Mock upload
       const mockUrl = 'https://bucket.s3.amazonaws.com/avatars/new.png'
-      vi.mocked(s3Service.upload).mockResolvedValue({ url: mockUrl } as any)
+      vi.mocked(s3Service.upload).mockResolvedValue({
+        url: mockUrl,
+        key: 'avatars/new.png',
+      })
 
       // Mock update returning empty
       const mockUpdateBuilder = {
@@ -358,7 +396,9 @@ describe('Users Service', () => {
         where: vi.fn().mockReturnThis(),
         returning: vi.fn().mockResolvedValue([]),
       }
-      vi.mocked(db.update).mockReturnValue(mockUpdateBuilder as any)
+      vi.mocked(db.update).mockReturnValue(
+        mockUpdateBuilder as unknown as ReturnType<typeof db.update>
+      )
 
       const file = {
         data: Buffer.from('test'),
@@ -375,7 +415,9 @@ describe('Users Service', () => {
     const mockDeleteBuilder = {
       where: vi.fn().mockReturnThis(),
     }
-    vi.mocked(db.delete).mockReturnValue(mockDeleteBuilder as any)
+    vi.mocked(db.delete).mockReturnValue(
+      mockDeleteBuilder as unknown as ReturnType<typeof db.delete>
+    )
 
     const result = await usersService.deleteUser(mockUser.id)
 

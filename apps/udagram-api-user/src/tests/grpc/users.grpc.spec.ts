@@ -39,14 +39,26 @@ describe('Users GRPC Service', () => {
       'JWT_PRIVATE_KEY_FILE',
       path.join(__dirname, '../private_test.pem')
     )
+    vi.stubEnv('JWT_SECRET_NAME', '')
     vi.stubEnv('GRPC_INTERNAL_TOKEN', internalToken)
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
+    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key-id')
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key')
+    vi.stubEnv('AWS_BUCKET', 'test-bucket')
+    vi.stubEnv(
+      'AWS_SNS_TOPIC_ARN',
+      'arn:aws:sns:us-east-1:000000000000:test-topic'
+    )
 
     app = await buildServer()
     await app.ready()
   })
 
   afterAll(async () => {
-    await app.close()
+    if (app) await app.close()
     vi.unstubAllEnvs()
   })
 

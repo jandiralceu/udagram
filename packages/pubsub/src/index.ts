@@ -50,7 +50,7 @@ export class PubSubClient {
     queueUrl: string,
     handler: (eventType: string, data: unknown) => Promise<void>
   ) {
-    console.info(`[PubSub] Starting poll on queue ${queueUrl}`)
+    console.info(`[PubSub] 🚀 Starting poll on queue ${queueUrl}\n`)
     // Infinite loop correctly implemented for polling
     while (true) {
       try {

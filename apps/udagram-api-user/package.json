@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "NODE_ENV=development nodemon",
     "build": "tsc",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -25,6 +25,7 @@
     "@udagram/fastify-dynamo-plugin": "^1.0.0",
     "@udagram/logger-config": "^1.0.0",
     "@udagram/pubsub": "^1.0.0",
+    "@udagram/secrets-manager": "^1.0.0",
     "@udagram/user-grpc": "^1.0.0",
     "argon2": "^0.44.0",
     "dotenv": "^17.2.4",
