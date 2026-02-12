@@ -1,9 +1,10 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { drizzle } from 'drizzle-orm/pglite'
 import { PGlite } from '@electric-sql/pglite'
 import { migrate } from 'drizzle-orm/pglite/migrator'
+
 import * as schema from '../db/schema.js'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

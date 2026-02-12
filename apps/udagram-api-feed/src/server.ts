@@ -59,7 +59,9 @@ export async function buildServer() {
   await fastify.register(fastifyJwt, {
     secret: {
       public: fs.readFileSync(
-        path.join(__dirname, '../../../public.pem'),
+        path.isAbsolute(fastify.config.JWT_PUBLIC_KEY_FILE)
+          ? fastify.config.JWT_PUBLIC_KEY_FILE
+          : path.join(__dirname, fastify.config.JWT_PUBLIC_KEY_FILE),
         'utf8'
       ),
     },

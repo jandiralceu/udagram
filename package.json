@@ -20,7 +20,8 @@
     "db:migrate:user": "npm run db:migrate -w apps/udagram-api-user",
     "db:generate:feed": "npm run db:generate --workspace=apps/udagram-api-feed --",
     "db:migrate:feed": "npm run db:migrate -w apps/udagram-api-feed",
-    "prepare": "husky"
+    "prepare": "husky",
+    "generate:keys": "npm run generate:keys -ws --if-present"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",

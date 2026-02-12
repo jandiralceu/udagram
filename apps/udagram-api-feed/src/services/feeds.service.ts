@@ -2,9 +2,7 @@ import { desc, eq } from 'drizzle-orm'
 
 import { db } from '../db/index.js'
 import { feedsTable } from '../db/schema.js'
-
 import { s3Service } from '../clients/s3.js'
-
 import { userClient } from '../clients/user.client.js'
 
 export const findAll = async () => {

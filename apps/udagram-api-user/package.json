@@ -10,7 +10,8 @@
     "db:migrate": "drizzle-kit migrate",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "generate:keys": "openssl genrsa -out src/tests/private_test.pem 2048 && openssl rsa -in src/tests/private_test.pem -pubout -out src/tests/public_test.pem"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.986.0",

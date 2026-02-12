@@ -1,7 +1,7 @@
-import { faker } from '@faker-js/faker'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { faker } from '@faker-js/faker'
 import jwt from 'jsonwebtoken'
 import type { FastifyInstance } from 'fastify'
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
@@ -56,15 +56,22 @@ describe('Feed Routes', () => {
   let authToken: string
 
   beforeAll(async () => {
+    const __filename = fileURLToPath(import.meta.url)
+    const __dirname = path.dirname(__filename)
+
+    // Configure server to use test public key
+    vi.stubEnv(
+      'JWT_PUBLIC_KEY_FILE',
+      path.join(__dirname, '../public_test.pem')
+    )
+
     const server = await buildServer()
     app = server.fastify
 
     // The server has JWT configured in verify-only mode (public key),
     // so we sign test tokens using the private key directly
-    const __filename = fileURLToPath(import.meta.url)
-    const __dirname = path.dirname(__filename)
     const privateKey = fs.readFileSync(
-      path.join(__dirname, '../../../../../private.pem'),
+      path.join(__dirname, '../private_test.pem'),
       'utf8'
     )
     authToken = jwt.sign({ sub: testUserId }, privateKey, {
@@ -74,6 +81,7 @@ describe('Feed Routes', () => {
 
   afterAll(async () => {
     await app.close()
+    vi.unstubAllEnvs()
   })
 
   describe('GET /api/v1/feeds', () => {
@@ -87,7 +95,8 @@ describe('Feed Routes', () => {
     })
 
     it('should return list of feeds', async () => {
-      const mockFeeds = [mockFeed({ user_id: testUserId })]
+      const feed = mockFeed({ user_id: testUserId })
+      const mockFeeds = [feed]
 
       vi.mocked(feedService.findAll).mockResolvedValue(mockFeeds)
 
@@ -100,7 +109,7 @@ describe('Feed Routes', () => {
       const body = response.json()
       expect(body).toHaveLength(1)
 
-      const expected = mockFeeds[0]!
+      const expected = feed
       expect(body[0]).toMatchObject({
         id: expected.id,
         caption: expected.caption,

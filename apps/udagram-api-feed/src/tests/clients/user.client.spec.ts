@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Interceptor } from '@connectrpc/connect'
+import { faker } from '@faker-js/faker'
 
 // Track the values passed to the mocked factories
 let capturedTransportOptions: {
@@ -42,12 +43,15 @@ describe('User Client', () => {
 
   describe('transport configuration', () => {
     it('should create transport with USER_GRPC_URL from env', async () => {
-      vi.stubEnv('USER_GRPC_URL', 'http://localhost:5001')
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', 'test-token')
+      const grpcEndpoint = faker.internet.url()
+      const token = faker.string.uuid()
+
+      vi.stubEnv('USER_GRPC_URL', grpcEndpoint)
+      vi.stubEnv('GRPC_INTERNAL_TOKEN', token)
 
       await import('../../clients/user.client.js')
 
-      expect(capturedTransportOptions.baseUrl).toBe('http://localhost:5001')
+      expect(capturedTransportOptions.baseUrl).toBe(grpcEndpoint)
     })
 
     it('should default to empty string when USER_GRPC_URL is not set', async () => {
@@ -60,8 +64,11 @@ describe('User Client', () => {
     })
 
     it('should use HTTP/1.1 for transport', async () => {
-      vi.stubEnv('USER_GRPC_URL', 'http://localhost:5001')
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
+      const grpcEndpoint = faker.internet.url()
+      const token = faker.string.uuid()
+
+      vi.stubEnv('USER_GRPC_URL', grpcEndpoint)
+      vi.stubEnv('GRPC_INTERNAL_TOKEN', token)
 
       await import('../../clients/user.client.js')
 
@@ -69,8 +76,8 @@ describe('User Client', () => {
     })
 
     it('should include auth interceptor in transport', async () => {
-      vi.stubEnv('USER_GRPC_URL', 'http://localhost:5001')
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
+      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
+      vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
       await import('../../clients/user.client.js')
 
@@ -81,8 +88,8 @@ describe('User Client', () => {
 
   describe('client creation', () => {
     it('should create client with UserService and transport', async () => {
-      vi.stubEnv('USER_GRPC_URL', 'http://localhost:5001')
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
+      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
+      vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
       await import('../../clients/user.client.js')
 
@@ -90,8 +97,8 @@ describe('User Client', () => {
     })
 
     it('should export userClient', async () => {
-      vi.stubEnv('USER_GRPC_URL', 'http://localhost:5001')
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
+      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
+      vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
       const mod = await import('../../clients/user.client.js')
 
@@ -101,13 +108,20 @@ describe('User Client', () => {
 
   describe('authInterceptor', () => {
     it('should add x-internal-token header when GRPC_INTERNAL_TOKEN is set', async () => {
-      vi.stubEnv('USER_GRPC_URL', 'http://localhost:5001')
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', 'my-secret-token')
+      const secretToken = faker.string.uuid()
+
+      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
+      vi.stubEnv('GRPC_INTERNAL_TOKEN', secretToken)
 
       await import('../../clients/user.client.js')
 
-      const interceptor = capturedTransportOptions.interceptors[0]!
-      const mockNext = vi.fn().mockResolvedValue({ message: 'ok' })
+      const interceptor = capturedTransportOptions.interceptors[0]
+
+      if (!interceptor) throw new Error('Expected interceptor to be defined')
+
+      const mockNext = vi
+        .fn()
+        .mockResolvedValue({ message: faker.lorem.sentences() })
       const mockReq = {
         header: new Headers(),
       }
@@ -116,18 +130,22 @@ describe('User Client', () => {
       const handler = interceptor(mockNext)
       await handler(mockReq as Parameters<typeof handler>[0])
 
-      expect(mockReq.header.get('x-internal-token')).toBe('my-secret-token')
+      expect(mockReq.header.get('x-internal-token')).toBe(secretToken)
       expect(mockNext).toHaveBeenCalledWith(mockReq)
     })
 
     it('should NOT add x-internal-token header when GRPC_INTERNAL_TOKEN is not set', async () => {
-      vi.stubEnv('USER_GRPC_URL', 'http://localhost:5001')
+      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
       vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
 
       await import('../../clients/user.client.js')
 
-      const interceptor = capturedTransportOptions.interceptors[0]!
-      const mockNext = vi.fn().mockResolvedValue({ message: 'ok' })
+      const interceptor = capturedTransportOptions.interceptors[0]
+      if (!interceptor) throw new Error('Expected interceptor to be defined')
+
+      const mockNext = vi
+        .fn()
+        .mockResolvedValue({ message: faker.lorem.sentences() })
       const mockReq = {
         header: new Headers(),
       }
@@ -140,13 +158,15 @@ describe('User Client', () => {
     })
 
     it('should forward the response from next', async () => {
-      vi.stubEnv('USER_GRPC_URL', 'http://localhost:5001')
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', 'token')
+      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
+      vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
 
       await import('../../clients/user.client.js')
 
-      const interceptor = capturedTransportOptions.interceptors[0]!
-      const expectedResponse = { message: 'expected-response' }
+      const interceptor = capturedTransportOptions.interceptors[0]
+      if (!interceptor) throw new Error('Expected interceptor to be defined')
+
+      const expectedResponse = { message: faker.lorem.sentences() }
       const mockNext = vi.fn().mockResolvedValue(expectedResponse)
       const mockReq = {
         header: new Headers(),

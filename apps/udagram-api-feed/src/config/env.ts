@@ -7,6 +7,7 @@ const schema = {
     'AWS_SECRET_ACCESS_KEY',
     'AWS_BUCKET',
     'AWS_SQS_QUEUE_URL',
+    'JWT_PUBLIC_KEY_FILE',
   ],
   properties: {
     APP_NAME: { type: 'string', default: 'udagram-feed-api' },
@@ -18,6 +19,7 @@ const schema = {
     AWS_REGION: { type: 'string', default: 'us-east-1' },
     AWS_BUCKET: { type: 'string' },
     AWS_SQS_QUEUE_URL: { type: 'string' },
+    JWT_PUBLIC_KEY_FILE: { type: 'string', default: '../../../public.pem' },
   },
 } as const
 
@@ -31,6 +33,7 @@ export interface EnvConfig {
   AWS_REGION: string
   AWS_BUCKET: string
   AWS_SQS_QUEUE_URL: string
+  JWT_PUBLIC_KEY_FILE: string
 }
 
 export default schema
