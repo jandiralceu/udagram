@@ -7,6 +7,7 @@ import type { FastifyInstance } from 'fastify'
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 
 import { buildServer } from '../../server.js'
+import * as feedService from '../../services/feeds.service.js'
 
 // Mock external dependencies
 vi.mock('../../clients/s3.js', () => ({
@@ -33,8 +34,6 @@ vi.mock('../../services/feeds.service.js', () => ({
   deleteFeed: vi.fn(),
   updateUserInfo: vi.fn(),
 }))
-
-import * as feedService from '../../services/feeds.service.js'
 
 function mockFeed(overrides: Record<string, unknown> = {}) {
   return {

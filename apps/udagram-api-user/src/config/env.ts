@@ -6,6 +6,9 @@ const schema = {
     'AWS_SECRET_ACCESS_KEY',
     'AWS_BUCKET',
     'AWS_SNS_TOPIC_ARN',
+    'JWT_PUBLIC_KEY_FILE',
+    'JWT_PRIVATE_KEY_FILE',
+    'GRPC_INTERNAL_TOKEN',
   ],
   properties: {
     APP_NAME: { type: 'string', default: 'udagram-user-api' },
@@ -17,6 +20,9 @@ const schema = {
     AWS_REGION: { type: 'string', default: 'us-east-1' },
     AWS_BUCKET: { type: 'string' },
     AWS_SNS_TOPIC_ARN: { type: 'string' },
+    JWT_PUBLIC_KEY_FILE: { type: 'string' },
+    JWT_PRIVATE_KEY_FILE: { type: 'string' },
+    GRPC_INTERNAL_TOKEN: { type: 'string' },
   },
 } as const
 
@@ -30,6 +36,9 @@ export interface EnvConfig {
   AWS_REGION: string
   AWS_BUCKET: string
   AWS_SNS_TOPIC_ARN: string
+  JWT_PUBLIC_KEY_FILE: string
+  JWT_PRIVATE_KEY_FILE: string
+  GRPC_INTERNAL_TOKEN: string
 }
 
 export default schema

@@ -127,26 +127,27 @@ export const updateAvatar = async (
     })
 
   // 3. Only after everything succeeded, delete the old avatar
-  if (oldAvatar) {
-    try {
-      await s3Service.deleteFile(bucket, oldAvatar)
-    } catch (error) {
-      // Old file cleanup failure is not critical — the new avatar is already saved
-      // But we should log it for visibility
-      if (error instanceof UploaderError) {
-        console.warn(
-          `[Avatar Cleanup] Failed to delete old avatar: ${error.message}`
-        )
-      } else {
-        console.warn(
-          '[Avatar Cleanup] Unknown error deleting old avatar',
-          error
-        )
+  // 3. Only after everything succeeded, delete the old avatar
+  if (updatedUser) {
+    if (oldAvatar) {
+      try {
+        await s3Service.deleteFile(bucket, oldAvatar)
+      } catch (error) {
+        // Old file cleanup failure is not critical — the new avatar is already saved
+        // But we should log it for visibility
+        if (error instanceof UploaderError) {
+          console.warn(
+            `[Avatar Cleanup] Failed to delete old avatar: ${error.message}`
+          )
+        } else {
+          console.warn(
+            '[Avatar Cleanup] Unknown error deleting old avatar',
+            error
+          )
+        }
       }
     }
-  }
 
-  if (updatedUser) {
     await publishUserEvent('UserUpdated', updatedUser)
   }
 

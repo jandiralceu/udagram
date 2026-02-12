@@ -14,6 +14,7 @@
     "generate:keys": "openssl genrsa -out src/tests/private_test.pem 2048 && openssl rsa -in src/tests/private_test.pem -pubout -out src/tests/public_test.pem"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.988.0",
     "@aws-sdk/client-sns": "^3.986.0",
     "@connectrpc/connect": "^2.1.1",
     "@connectrpc/connect-fastify": "^2.1.1",
@@ -29,7 +30,6 @@
     "dotenv": "^17.2.4",
     "drizzle-orm": "^0.45.1",
     "fastify": "^5.7.4",
-    "fastify-i18n": "^3.0.0",
     "fastify-type-provider-zod": "^6.1.0",
     "pg": "^8.18.0",
     "zod": "^4.3.6"

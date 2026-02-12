@@ -20,6 +20,11 @@ export const getProfile = async (
 export const getById = async (request: FastifyRequest, reply: FastifyReply) => {
   const { userId } = request.params as { userId: string }
   const user = await usersService.getUserById(userId)
+
+  if (!user) {
+    return reply.status(404).send({ message: 'User not found' })
+  }
+
   return reply.send(user)
 }
 

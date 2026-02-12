@@ -8,6 +8,7 @@ const schema = {
     'AWS_BUCKET',
     'AWS_SQS_QUEUE_URL',
     'JWT_PUBLIC_KEY_FILE',
+    'GRPC_INTERNAL_TOKEN',
   ],
   properties: {
     APP_NAME: { type: 'string', default: 'udagram-feed-api' },
@@ -19,7 +20,8 @@ const schema = {
     AWS_REGION: { type: 'string', default: 'us-east-1' },
     AWS_BUCKET: { type: 'string' },
     AWS_SQS_QUEUE_URL: { type: 'string' },
-    JWT_PUBLIC_KEY_FILE: { type: 'string', default: '../../../public.pem' },
+    JWT_PUBLIC_KEY_FILE: { type: 'string' },
+    GRPC_INTERNAL_TOKEN: { type: 'string' },
   },
 } as const
 
@@ -34,6 +36,7 @@ export interface EnvConfig {
   AWS_BUCKET: string
   AWS_SQS_QUEUE_URL: string
   JWT_PUBLIC_KEY_FILE: string
+  GRPC_INTERNAL_TOKEN: string
 }
 
 export default schema

@@ -2,7 +2,7 @@ import 'dotenv/config'
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import { PubSubClient, PubSubEvents } from '@udagram/pubsub'
-import fastifyI18n from 'fastify-i18n'
+
 import fastifyJwt from '@fastify/jwt'
 import {
   serializerCompiler,
@@ -17,9 +17,8 @@ import { fileURLToPath } from 'node:url'
 
 import logger from '@udagram/logger-config'
 
-import schema, { type EnvConfig } from './config/env.js'
-import messages from './config/i18n.js'
 import feedRoutes from './routes/v1/feed.js'
+import schema, { type EnvConfig } from './config/env.js'
 import { updateUserInfo } from './services/feeds.service.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -37,10 +36,8 @@ declare module 'fastify' {
 
 // Export buildServer for testing
 export async function buildServer() {
-  const env = process.env.NODE_ENV || 'development'
-
   const fastify = Fastify({
-    logger: logger[env as keyof typeof logger],
+    logger: logger[process.env.NODE_ENV as keyof typeof logger],
   }).withTypeProvider<ZodTypeProvider>()
 
   // Register the environment plugin
@@ -48,12 +45,6 @@ export async function buildServer() {
     schema,
     dotenv: true,
   } as FastifyEnvOptions)
-
-  // Register the i18n plugin
-  await fastify.register(fastifyI18n, {
-    fallbackLocale: 'en',
-    messages,
-  })
 
   // Register JWT plugin
   await fastify.register(fastifyJwt, {
