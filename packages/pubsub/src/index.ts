@@ -37,11 +37,11 @@ export class PubSubClient {
 
       const response = await this.snsClient.send(command)
       console.info(
-        `[PubSub] Published event ${eventType} to topic ${topicArn}. MessageId: ${response.MessageId}`
+        `✅ Published event ${eventType} to topic ${topicArn}. MessageId: ${response.MessageId}`
       )
       return response
     } catch (error) {
-      console.error(`[PubSub] Failed to publish event ${eventType}:`, error)
+      console.error(`❌ Failed to publish event ${eventType}:`, error)
       throw error
     }
   }
@@ -50,7 +50,7 @@ export class PubSubClient {
     queueUrl: string,
     handler: (eventType: string, data: unknown) => Promise<void>
   ) {
-    console.info(`[PubSub] 🚀 Starting poll on queue ${queueUrl}\n`)
+    console.info(`🚀 Starting poll on queue ${queueUrl}\n`)
     // Infinite loop correctly implemented for polling
     while (true) {
       try {
