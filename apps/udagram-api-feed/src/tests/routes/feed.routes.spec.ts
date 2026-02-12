@@ -64,6 +64,17 @@ describe('Feed Routes', () => {
       path.join(__dirname, '../public_test.pem')
     )
     vi.stubEnv('JWT_SECRET_NAME', '')
+    vi.stubEnv('AWS_REGION', 'us-east-1')
+    vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
+    vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())
+    vi.stubEnv('AWS_BUCKET', faker.lorem.word())
+    vi.stubEnv('AWS_SQS_QUEUE_URL', faker.internet.url())
+    vi.stubEnv('USER_GRPC_URL', faker.internet.url())
+    vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv(
+      'DB_CONNECTION_STRING',
+      'postgresql://user:pass@localhost:5432/db'
+    )
 
     const server = await buildServer()
     app = server.fastify

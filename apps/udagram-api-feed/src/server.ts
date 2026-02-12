@@ -124,9 +124,27 @@ export async function buildServer() {
   return { fastify, pubSubClient }
 }
 
+export const startEventPolling = (
+  pubSubClient: PubSubClient,
+  queueUrl: string
+) => {
+  pubSubClient.poll(queueUrl, async (eventType: string, data: unknown) => {
+    if (eventType === PubSubEvents.USER_UPDATED) {
+      const userData = data as {
+        id: string
+        name: string
+        avatar: string | null
+      }
+      console.log(`[Feed Service] Synced user data for ${userData.id}`)
+      await updateUserInfo(userData.id, userData)
+    }
+  })
+}
+
 /**
  * Server Execution Block
  */
+/* v8 ignore start */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     const { fastify, pubSubClient } = await buildServer()
@@ -139,22 +157,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.info(`\n🚀 Feed API Server listening at ${address}\n`)
 
     // Start background event polling
-    pubSubClient.poll(
-      fastify.config.AWS_SQS_QUEUE_URL,
-      async (eventType: string, data: unknown) => {
-        if (eventType === PubSubEvents.USER_UPDATED) {
-          const userData = data as {
-            id: string
-            name: string
-            avatar: string | null
-          }
-          console.log(`[Feed Service] Synced user data for ${userData.id}`)
-          await updateUserInfo(userData.id, userData)
-        }
-      }
-    )
+    startEventPolling(pubSubClient, fastify.config.AWS_SQS_QUEUE_URL)
   } catch (err) {
     console.error('Failed to start Feed API:', err)
     process.exit(1)
   }
 }
+/* v8 ignore stop */
