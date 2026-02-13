@@ -71,7 +71,22 @@ jobs:
       - name: Run tests on affected packages
         run: npx turbo run test:coverage --filter=...[origin/main]
 
+      - name: Check coverage files
+        id: check_coverage
+        run: |
+          if [ -f apps/udagram-api-user/coverage/lcov.info ]; then
+            echo "user_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "user_exists=false" >> $GITHUB_OUTPUT
+          fi
+          if [ -f apps/udagram-api-feed/coverage/lcov.info ]; then
+            echo "feed_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "feed_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload API User Coverage
+        if: steps.check_coverage.outputs.user_exists == 'true'
         uses: codecov/codecov-action@v4
         with:
           file: apps/udagram-api-user/coverage/lcov.info
@@ -80,6 +95,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload API Feed Coverage
+        if: steps.check_coverage.outputs.feed_exists == 'true'
         uses: codecov/codecov-action@v4
         with:
           file: apps/udagram-api-feed/coverage/lcov.info
