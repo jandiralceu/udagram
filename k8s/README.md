@@ -39,27 +39,39 @@ This directory contains the Kubernetes configuration files for the Udagram appli
 ## Installation
 
 ```bash
+# Create namespace first
 kubectl apply -f udagram-namespace.yaml
-kubectl apply -f udagram-secrets.yaml
-kubectl apply -f udagram-configmaps.yaml
-kubectl apply -f udagram-storage.yaml
-kubectl apply -f udagram-api-feed-deployment.yaml
-kubectl apply -f udagram-api-user-deployment.yaml
-kubectl apply -f udagram-frontend-deployment.yaml
-kubectl apply -f udagram-reverseproxy-deployment.yaml
-kubectl apply -f udagram-ingress.yaml
+```
+
+```bash
+# Apply all other resources
+kubectl apply \
+  -f udagram-secrets.yaml \
+  -f udagram-configmaps.yaml \
+  -f udagram-storage.yaml \
+  -f udagram-api-feed-deployment.yaml \
+  -f udagram-api-user-deployment.yaml \
+  -f udagram-frontend-deployment.yaml \
+  -f udagram-reverseproxy-deployment.yaml \
+  -f udagram-ingress.yaml
 ```
 
 ## Uninstallation
 
 ```bash
-kubectl delete -f udagram-ingress.yaml
-kubectl delete -f udagram-reverseproxy-deployment.yaml
-kubectl delete -f udagram-frontend-deployment.yaml
-kubectl delete -f udagram-api-user-deployment.yaml
-kubectl delete -f udagram-api-feed-deployment.yaml
-kubectl delete -f udagram-storage.yaml
-kubectl delete -f udagram-configmaps.yaml
-kubectl delete -f udagram-secrets.yaml
+# Delete all resources except namespace
+kubectl delete \
+  -f udagram-ingress.yaml \
+  -f udagram-reverseproxy-deployment.yaml \
+  -f udagram-frontend-deployment.yaml \
+  -f udagram-api-user-deployment.yaml \
+  -f udagram-api-feed-deployment.yaml \
+  -f udagram-storage.yaml \
+  -f udagram-configmaps.yaml \
+  -f udagram-secrets.yaml
+```
+
+```bash
+# Delete namespace last
 kubectl delete -f udagram-namespace.yaml
 ```

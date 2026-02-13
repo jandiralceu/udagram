@@ -41,10 +41,10 @@ export const CreateFeedMultipartSchema = z.object({
 })
 
 export const FeedResponseSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   caption: z.string(),
   image_url: z.string(),
-  user_id: z.string().uuid(),
+  user_id: z.uuid(),
   user_name: z.string(),
   user_avatar: z.string().nullable(),
   created_at: z.string().or(z.date()),

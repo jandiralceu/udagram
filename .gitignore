@@ -9,4 +9,5 @@ dist
 *.pem
 *_accessKeys.csv
 coverage
+.idea
 
