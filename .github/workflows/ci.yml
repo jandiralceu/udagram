@@ -120,6 +120,10 @@ jobs:
   docker:
     name: 🐳 Docker Build (Dry Run)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
     needs: [build]
     strategy:
       matrix:
