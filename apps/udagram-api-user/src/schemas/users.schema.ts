@@ -1,13 +1,24 @@
 import { z } from 'zod'
 
+/**
+ * Schema for validating user retrieval parameters.
+ */
 export const GetUserParamsSchema = z.object({
   userId: z.uuid(),
 })
 
+/**
+ * Schema for validating user update parameters.
+ */
 export const UpdateUserParamsSchema = z.object({
   userId: z.uuid(),
 })
 
+/**
+ * Schema for validating user profile update payload.
+ * Requires at least one field (name or password) to be present.
+ * Validates password confirmation if password is provided.
+ */
 export const UpdateUserBodySchema = z
   .object({
     name: z
@@ -51,6 +62,10 @@ const ALLOWED_MIME_TYPES = [
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
+/**
+ * Schema for validating user avatar upload payload.
+ * Validates file type (image) and size (max 5MB).
+ */
 export const UpdateUserAvatarBodySchema = z.object({
   file: z.object({
     filename: z.string(),
@@ -72,10 +87,13 @@ export const UpdateUserAvatarBodySchema = z.object({
   }),
 })
 
+/**
+ * Schema for the user profile response.
+ */
 export const UserResponseSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string(),
-  email: z.string().email(),
+  email: z.email(),
   avatar: z.string().nullable(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),

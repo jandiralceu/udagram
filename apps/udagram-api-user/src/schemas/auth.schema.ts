@@ -1,10 +1,18 @@
 import { z } from 'zod'
 
+/**
+ * Schema for validating user login credentials.
+ */
 export const LoginSchema = z.object({
   email: z.email(),
   password: z.string().min(8),
 })
 
+/**
+ * Schema for validating user registration data.
+ * Requires email, password (min 8 chars), and name.
+ * Validates that password matches confirmPassword.
+ */
 export const SignupSchema = z
   .object({
     email: z.email(),
@@ -17,6 +25,9 @@ export const SignupSchema = z
     path: ['confirmPassword'],
   })
 
+/**
+ * Schema for the response after successful signup.
+ */
 export const SignupResponseSchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -26,6 +37,9 @@ export const SignupResponseSchema = z.object({
   updated_at: z.string().or(z.date()),
 })
 
+/**
+ * Schema for the response containing authentication tokens.
+ */
 export const TokenResponseSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
@@ -36,6 +50,9 @@ export type SignupDTO = z.infer<typeof SignupSchema>
 export type SignupResponse = z.infer<typeof SignupResponseSchema>
 export type TokenResponse = z.infer<typeof TokenResponseSchema>
 
+/**
+ * Schema for validating token refresh requests.
+ */
 export const RefreshTokenSchema = z.object({
   refreshToken: z.string(),
 })

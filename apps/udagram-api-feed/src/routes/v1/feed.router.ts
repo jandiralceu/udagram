@@ -7,12 +7,20 @@ import {
   FeedResponseSchema,
 } from '../../schemas/feeds.schema.js'
 
+/**
+ * Feed REST Routes (v1)
+ *
+ * Handles all feed-related operations including listing, retrieval,
+ * creation, and deletion of feed items.
+ * All routes in this plugin are protected by JWT authentication.
+ */
 export default async function feedRoutes(
   fastify: FastifyInstance,
   _opts: FastifyPluginOptions
 ) {
   const app = fastify.withTypeProvider<ZodTypeProvider>()
 
+  // Apply authentication to all routes in this plugin
   fastify.addHook('onRequest', fastify.authenticate)
 
   app.get(

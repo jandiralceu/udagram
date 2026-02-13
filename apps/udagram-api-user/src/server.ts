@@ -22,8 +22,8 @@ import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
 import { getSecret, formatAsPem } from '@udagram/secrets-manager'
 
 import schema, { type EnvConfig } from './config/env.js'
-import authRoutes from './routes/v1/auth.js'
-import usersRoutes from './routes/v1/users.js'
+import authRoutes from './routes/v1/auth.router.js'
+import usersRoutes from './routes/v1/users.router.js'
 import grpcRoutes from './controllers/grpc/users.grpc.js'
 
 const __filename = fileURLToPath(import.meta.url)
