@@ -1,10 +1,16 @@
 import { z } from 'zod'
 
+/**
+ * Schema for validating feed creation payload when providing an image URL directly.
+ */
 export const CreateFeedBodySchema = z.object({
   caption: z.string().min(1),
   imageUrl: z.url(),
 })
 
+/**
+ * Schema for validating feed retrieval parameters.
+ */
 export const GetFeedParamsSchema = z.object({
   feedId: z.uuid(),
 })
@@ -18,6 +24,10 @@ const ALLOWED_MIME_TYPES = [
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
+/**
+ * Schema for validating feed creation via multipart/form-data.
+ * Validates caption and file (image type and size limit 10MB).
+ */
 export const CreateFeedMultipartSchema = z.object({
   caption: z.string().min(1),
   file: z.object({
@@ -40,6 +50,9 @@ export const CreateFeedMultipartSchema = z.object({
   }),
 })
 
+/**
+ * Schema for the feed item response.
+ */
 export const FeedResponseSchema = z.object({
   id: z.uuid(),
   caption: z.string(),

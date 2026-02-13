@@ -87,21 +87,23 @@ jobs:
 
       - name: Upload API User Coverage
         if: steps.check_coverage.outputs.user_exists == 'true'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: apps/udagram-api-user/coverage/lcov.info
-          flags: api-user
+          files: apps/udagram-api-user/coverage/lcov.info
+          flags: user-service
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: jandiralceu/udagram
 
       - name: Upload API Feed Coverage
         if: steps.check_coverage.outputs.feed_exists == 'true'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: apps/udagram-api-feed/coverage/lcov.info
-          flags: api-feed
+          files: apps/udagram-api-feed/coverage/lcov.info
+          flags: feed-service
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: jandiralceu/udagram
 
   build:
     name: 🏗️ Build

@@ -10,6 +10,12 @@ import {
 } from '../../schemas/auth.schema.js'
 import * as authController from '../../controllers/rest/auth.controller.js'
 
+/**
+ * Auth REST Routes (v1)
+ *
+ * Handles user authentication operations including signup, signin,
+ * and token refreshing.
+ */
 export default async function authRoutes(
   fastify: FastifyInstance,
   _opts: FastifyPluginOptions

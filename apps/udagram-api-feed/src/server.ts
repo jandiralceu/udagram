@@ -20,7 +20,7 @@ import { PubSubClient, PubSubEvents } from '@udagram/pubsub'
 import { getSecret, formatAsPem } from '@udagram/secrets-manager'
 
 import schema, { type EnvConfig } from './config/env.js'
-import feedRoutes from './routes/v1/feed.js'
+import feedRoutes from './routes/v1/feed.router.js'
 import { updateUserInfo } from './services/feeds.service.js'
 
 const __filename = fileURLToPath(import.meta.url)
