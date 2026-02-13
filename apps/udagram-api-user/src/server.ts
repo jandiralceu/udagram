@@ -158,11 +158,10 @@ export async function buildServer() {
 
   // 3. Database & Storage Setup
   await fastify.register(dynamoPlugin, {
-    endpoint: fastify.config.DYNAMO_DB_ENDPOINT,
-    region: 'us-east-1',
+    region: fastify.config.AWS_REGION,
     credentials: {
-      accessKeyId: 'test',
-      secretAccessKey: 'test',
+      accessKeyId: fastify.config.AWS_ACCESS_KEY_ID,
+      secretAccessKey: fastify.config.AWS_SECRET_ACCESS_KEY,
     },
   })
 

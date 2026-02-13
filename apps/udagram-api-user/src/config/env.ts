@@ -18,7 +18,6 @@ const schema = {
     APP_NAME: { type: 'string', default: 'udagram-user-api' },
     PORT: { type: 'number', default: 8080 },
     DB_CONNECTION_STRING: { type: 'string' },
-    DYNAMO_DB_ENDPOINT: { type: 'string' },
     AWS_ACCESS_KEY_ID: { type: 'string' },
     AWS_SECRET_ACCESS_KEY: { type: 'string' },
     AWS_REGION: { type: 'string', default: 'us-east-1' },
@@ -38,7 +37,6 @@ export interface EnvConfig {
   APP_NAME: string
   PORT: number
   DB_CONNECTION_STRING: string
-  DYNAMO_DB_ENDPOINT: string
   AWS_ACCESS_KEY_ID: string
   AWS_SECRET_ACCESS_KEY: string
   AWS_REGION: string
