@@ -91,6 +91,7 @@ jobs:
         with:
           files: apps/udagram-api-user/coverage/lcov.info
           flags: user-service
+          disable_search: true
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: jandiralceu/udagram
@@ -101,6 +102,7 @@ jobs:
         with:
           files: apps/udagram-api-feed/coverage/lcov.info
           flags: feed-service
+          disable_search: true
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: jandiralceu/udagram
