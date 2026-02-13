@@ -30,7 +30,7 @@ COPY --from=builder /app/apps/udagram-api-feed/dist ./apps/udagram-api-feed/dist
 COPY --from=builder /app/apps/udagram-api-feed/package.json ./apps/udagram-api-feed/package.json
 COPY --from=builder /app/node_modules ./node_modules
 
-# Expose port (default from env config is 8080)
+# Expose port
 EXPOSE 8080
 
 # Set working directory to the app

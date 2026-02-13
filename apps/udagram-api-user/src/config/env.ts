@@ -1,3 +1,9 @@
+/**
+ * JSON Schema for validating environment variables.
+ *
+ * This schema is used by fastify-env to validate and load configuration
+ * from .env files or system environment variables.
+ */
 const schema = {
   type: 'object',
   required: [
@@ -25,6 +31,9 @@ const schema = {
   },
 } as const
 
+/**
+ * TypeScript interface representing the validated environment configuration.
+ */
 export interface EnvConfig {
   APP_NAME: string
   PORT: number

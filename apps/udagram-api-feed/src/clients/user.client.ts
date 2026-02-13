@@ -20,4 +20,11 @@ const transport = createConnectTransport({
   interceptors: [authInterceptor],
 })
 
+/**
+ * gRPC Client for the User Service.
+ *
+ * This client is configured with HTTP/1.1 transport and an internal authentication
+ * interceptor that injects the 'x-internal-token' header for service-to-service communication.
+ * It provides type-safe access to user-related operations defined in the protobuf schema.
+ */
 export const userClient = createClient(UserService, transport)
