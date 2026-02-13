@@ -72,7 +72,17 @@ export const UpdateUserAvatarBodySchema = z.object({
   }),
 })
 
+export const UserResponseSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  email: z.string().email(),
+  avatar: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+})
+
 export type GetUserParams = z.infer<typeof GetUserParamsSchema>
 export type UpdateUserParams = z.infer<typeof UpdateUserParamsSchema>
 export type UpdateUserBody = z.infer<typeof UpdateUserBodySchema>
 export type UpdateUserAvatarBody = z.infer<typeof UpdateUserAvatarBodySchema>
+export type UserResponse = z.infer<typeof UserResponseSchema>

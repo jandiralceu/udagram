@@ -42,6 +42,7 @@ jobs:
               - 'packages/aws-uploader/**'
               - 'packages/pubsub/**'
               - 'packages/secrets-manager/**'
+              - 'k8s/**'
               - 'package.json'
               - 'package-lock.json'
               - 'turbo.json'
@@ -53,18 +54,21 @@ jobs:
               - 'packages/aws-uploader/**'
               - 'packages/pubsub/**'
               - 'packages/secrets-manager/**'
+              - 'k8s/**'
               - 'package.json'
               - 'package-lock.json'
               - 'turbo.json'
               - '.github/workflows/cd.yml'
             frontend:
               - 'apps/udagram-frontend/**'
+              - 'k8s/**'
               - 'package.json'
               - 'package-lock.json'
               - 'turbo.json'
               - '.github/workflows/cd.yml'
             reverseproxy:
               - 'apps/udagram-reverseproxy/**'
+              - 'k8s/**'
               - '.github/workflows/cd.yml'
 
   build:

@@ -69,7 +69,23 @@ jobs:
         run: npm ci
 
       - name: Run tests on affected packages
-        run: npx turbo run test --filter=...[origin/main]
+        run: npx turbo run test:coverage --filter=...[origin/main]
+
+      - name: Upload API User Coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: apps/udagram-api-user/coverage/lcov.info
+          flags: api-user
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload API Feed Coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: apps/udagram-api-feed/coverage/lcov.info
+          flags: api-feed
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     name: 🏗️ Build
@@ -104,10 +120,14 @@ jobs:
   docker:
     name: 🐳 Docker Build (Dry Run)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
     needs: [build]
     strategy:
       matrix:
-        app: [udagram-api-user, udagram-api-feed, udagram-frontend]
+        app: [udagram-api-user, udagram-api-feed, udagram-frontend, udagram-reverseproxy]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -125,11 +145,27 @@ jobs:
         if: steps.changes.outputs.app == 'true'
         uses: docker/setup-buildx-action@v3
 
+      - name: Login to Docker Hub
+        if: steps.changes.outputs.app == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine build context
+        id: ctx
+        run: |
+          if [ "${{ matrix.app }}" == "udagram-reverseproxy" ]; then
+            echo "path=apps/${{ matrix.app }}" >> $GITHUB_OUTPUT
+          else
+            echo "path=." >> $GITHUB_OUTPUT
+          fi
+
       - name: Build Docker image (no push)
         if: steps.changes.outputs.app == 'true'
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ${{ steps.ctx.outputs.path }}
           file: apps/${{ matrix.app }}/Dockerfile
           push: false
           tags: jandir/${{ matrix.app }}:pr-${{ github.event.pull_request.number }}

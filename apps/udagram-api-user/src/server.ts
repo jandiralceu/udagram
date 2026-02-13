@@ -7,10 +7,13 @@ import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import fastifyMultipart from '@fastify/multipart'
 import fastifyJwt from '@fastify/jwt'
 
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
 import {
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
+  jsonSchemaTransform,
 } from 'fastify-type-provider-zod'
 import { fastifyConnectPlugin } from '@connectrpc/connect-fastify'
 
@@ -55,6 +58,36 @@ export async function buildServer() {
     schema,
     dotenv: true,
   } as FastifyEnvOptions)
+
+  // 1.5 Swagger Configuration
+  await fastify.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'Udagram User API',
+        description: 'User management service for Udagram application',
+        version: '1.0.0',
+      },
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+      servers: [],
+    },
+    transform: (params: Parameters<typeof jsonSchemaTransform>[0]) => {
+      const { schema, url } = jsonSchemaTransform(params)
+      const isRestRoute = url.startsWith('/api/')
+      return { schema: { ...schema, hide: !isRestRoute }, url }
+    },
+  })
+
+  await fastify.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+  })
 
   // 2. JWT & Security Setup
   let jwtKeys: JwtKeys
@@ -144,7 +177,7 @@ export async function buildServer() {
   fastify.setSerializerCompiler(serializerCompiler)
 
   // 5. Route Registration
-  fastify.get('/health', async () => ({
+  fastify.get('/health', { schema: { hide: true } }, async () => ({
     app: fastify.config.APP_NAME,
     status: 'healthy',
   }))

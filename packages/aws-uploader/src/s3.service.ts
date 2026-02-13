@@ -37,7 +37,7 @@ export interface SignedUrlOptions {
 }
 
 export class S3Service {
-  private client: S3Client
+  private readonly client: S3Client
 
   constructor(config: S3ClientConfig) {
     this.client = new S3Client(config)

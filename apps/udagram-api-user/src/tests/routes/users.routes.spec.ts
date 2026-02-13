@@ -114,7 +114,14 @@ describe('Users Routes', () => {
     })
 
     it('should return user profile', async () => {
-      const mockUser = { id: testUserId, name: faker.person.fullName() }
+      const mockUser = {
+        id: testUserId,
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        avatar: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
       vi.mocked(usersService.getUserById).mockResolvedValue(
         mockUser as unknown as Awaited<
           ReturnType<typeof usersService.getUserById>
@@ -148,7 +155,14 @@ describe('Users Routes', () => {
   describe('GET /api/v1/users/:userId', () => {
     it('should return user by id', async () => {
       const targetUserId = faker.string.uuid()
-      const mockUser = { id: targetUserId, name: faker.person.fullName() }
+      const mockUser = {
+        id: targetUserId,
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        avatar: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
       vi.mocked(usersService.getUserById).mockResolvedValue(
         mockUser as unknown as Awaited<
           ReturnType<typeof usersService.getUserById>
@@ -183,7 +197,14 @@ describe('Users Routes', () => {
 
   describe('PATCH /api/v1/users', () => {
     it('should update user', async () => {
-      const updatedUser = { id: testUserId, name: faker.person.fullName() }
+      const updatedUser = {
+        id: testUserId,
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        avatar: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
       vi.mocked(usersService.updateUser).mockResolvedValue(
         updatedUser as unknown as Awaited<
           ReturnType<typeof usersService.updateUser>
@@ -218,7 +239,7 @@ describe('Users Routes', () => {
         },
       })
 
-      expect(response.statusCode).toBe(406)
+      expect(response.statusCode).toBe(400)
     })
   })
 
