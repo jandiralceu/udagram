@@ -3,6 +3,7 @@ import Container from '@mui/material/Container'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { CreateFeedForm, FeedCard } from './-components/feed'
+import { Header } from '@presentation/components/layout'
 import { FeedFactory } from '@factories/index'
 import { useQuery } from '@tanstack/react-query'
 import { QueryKeys } from '@presentation/utils/constants'
@@ -35,24 +36,28 @@ function RouteComponent() {
   })
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        minHeight: '100dvh',
-        py: 4,
-        bgcolor: 'background.default',
-      }}
-    >
-      <Container maxWidth="sm">
-        <CreateFeedForm />
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 6 }}>
-          {isLoading && <div>Loading...</div>}
+    <>
+      <Header />
+      <Box
+        sx={{
+          display: 'flex',
+          minHeight: '100dvh',
+          pt: '100px',
+          pb: 4,
+          bgcolor: 'background.default',
+        }}
+      >
+        <Container maxWidth="sm">
+          <CreateFeedForm />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 6 }}>
+            {isLoading && <div>Loading...</div>}
 
-          {feeds?.map(feed => (
-            <FeedCard key={feed.id} {...feed} />
-          ))}
-        </Box>
-      </Container>
-    </Box>
+            {feeds?.map(feed => (
+              <FeedCard key={feed.id} {...feed} />
+            ))}
+          </Box>
+        </Container>
+      </Box>
+    </>
   )
 }
