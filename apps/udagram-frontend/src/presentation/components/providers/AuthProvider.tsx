@@ -129,7 +129,7 @@ export function AuthProvider({
 
   const loadingMessage = useMemo(() => {
     if (signinStatus != 'idle') return null
-    if ((isGettingProfile && !user) || isRefetchingProfile) {
+    if ((isGettingProfile || isRefetchingProfile) && !user) {
       return 'Checking your session...'
     }
 
