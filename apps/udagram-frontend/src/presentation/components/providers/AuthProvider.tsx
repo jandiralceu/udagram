@@ -90,20 +90,6 @@ export function AuthProvider({
     retry: false,
   })
 
-  const { mutateAsync: updateAvatarHandler } = useMutation({
-    mutationFn: async (file: File) => {
-      return await userRepository.updateAvatar(file)
-    },
-    onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: [QueryKeys.me] })
-      log.info('✅ Avatar updated successfully')
-    },
-    onError(error: unknown) {
-      log.error('❌ Avatar update failed:', error)
-    },
-    retry: false,
-  })
-
   const isAuthenticating = signinStatus === 'pending'
 
   const value = useMemo(
@@ -114,7 +100,6 @@ export function AuthProvider({
       signin: signinHandler,
       signup: signupHandler,
       signout: signOutHandler,
-      updateAvatar: updateAvatarHandler,
     }),
     [
       user,
@@ -123,7 +108,6 @@ export function AuthProvider({
       signinHandler,
       signupHandler,
       signOutHandler,
-      updateAvatarHandler,
     ]
   )
 

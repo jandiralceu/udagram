@@ -8,7 +8,6 @@ export type AuthState = {
   signin(request: signinRequest): Promise<void>
   signup(request: signupRequest): Promise<void>
   signout(): Promise<void>
-  updateAvatar(file: File): Promise<void>
 }
 
 export const AuthContext = createContext<AuthState | undefined>(undefined)

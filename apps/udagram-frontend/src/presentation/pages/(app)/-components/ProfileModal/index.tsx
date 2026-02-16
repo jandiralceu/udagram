@@ -1,5 +1,5 @@
 import log from 'loglevel'
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -12,32 +12,40 @@ import CameraIcon from '@mui/icons-material/PhotoCamera'
 import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
 import { toast } from 'sonner'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAuth } from '@presentation/hooks/useAuth'
+import { UserFactory } from '@factories/index'
+import { QueryKeys } from '@presentation/utils/constants'
 
 type Props = {
   open: boolean
   onClose: () => void
 }
 
+const userRepository = UserFactory.createRepository()
+
 export function ProfileModal({ open, onClose }: Props) {
-  const { user, updateAvatar } = useAuth()
-  const [isUploading, setIsUploading] = useState(false)
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    try {
-      setIsUploading(true)
-      await updateAvatar(file)
+  const { mutate, isPending: isUploading } = useMutation({
+    mutationFn: (file: File) => userRepository.updateAvatar(file),
+    onSuccess: () => {
       toast.success('Avatar updated successfully!')
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.me] })
+    },
+    onError: error => {
       toast.error('Error updating avatar. Please try again.')
       log.error('Error updating avatar:', error)
-    } finally {
-      setIsUploading(false)
+    },
+  })
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      mutate(file)
     }
   }
 
