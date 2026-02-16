@@ -1,14 +1,11 @@
 import type { AxiosInstance } from 'axios'
-import type {
-  signinRequest,
-  signupRequest,
-  signupResponse,
-} from '@domain/entities'
+
+import type { signinRequest, signupRequest } from '@domain/entities'
 import type { AuthSessionModel } from '../../models'
 
 export interface IAuthRemoteDataSource {
   signin(request: signinRequest): Promise<AuthSessionModel>
-  signup(request: signupRequest): Promise<signupResponse>
+  signup(request: signupRequest): Promise<void>
   signout(refreshToken: string): Promise<void>
 }
 
@@ -28,12 +25,8 @@ export class AuthRemoteDataSource implements IAuthRemoteDataSource {
     return response.data
   }
 
-  async signup(request: signupRequest): Promise<signupResponse> {
-    const response = await this.#httpClient.post<signupResponse>(
-      `${this.#url}/signup`,
-      request
-    )
-    return response.data
+  async signup(request: signupRequest): Promise<void> {
+    await this.#httpClient.post<void>(`${this.#url}/signup`, request)
   }
 
   async signout(refreshToken: string): Promise<void> {

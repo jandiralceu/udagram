@@ -1,2 +1,3 @@
-export * from './auth_repository'
-export * from './user_repository'
+export * from './auth.repository'
+export * from './user.repository'
+export * from './feed.repository'

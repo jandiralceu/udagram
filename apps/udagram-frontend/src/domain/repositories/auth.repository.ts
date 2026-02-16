@@ -1,4 +1,4 @@
-import type { signinRequest, signupRequest } from '../entities'
+import type { signinRequest, signupRequest } from '../entities/index.js'
 
 export interface IAuthRepository {
   signin(request: signinRequest): Promise<void>

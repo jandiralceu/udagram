@@ -7,7 +7,7 @@ import {
   afterEach,
   type Mock,
 } from 'vitest'
-import { AuthRepository } from './auth_repository'
+import { AuthRepository } from './auth.repository'
 import type { IAuthRemoteDataSource } from '../datasources'
 import { AuthStorage } from '@infra/cache/auth_storage'
 

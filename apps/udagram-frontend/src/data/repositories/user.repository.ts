@@ -12,8 +12,14 @@ export class UserRepository implements IUserRepository {
 
   async getProfile(): Promise<User> {
     try {
-      const response = await this.#remoteDataSource.getProfile()
-      return response
+      const model = await this.#remoteDataSource.getProfile()
+      return {
+        id: model.id,
+        name: model.name,
+        email: model.email,
+        avatar: model.avatar ?? undefined,
+        createdAt: new Date(model.created_at),
+      }
     } catch (error) {
       console.error(error)
       throw error

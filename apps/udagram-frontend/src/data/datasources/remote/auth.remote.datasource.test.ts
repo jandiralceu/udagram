@@ -1,23 +1,18 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
-import { AuthRemoteDataSource } from './auth_remote_datasource'
 import type { AxiosInstance } from 'axios'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
+import { faker } from '@faker-js/faker'
+
+import { AuthRemoteDataSource } from './auth.remote.datasource'
 
 describe('AuthRemoteDataSource', () => {
   let dataSource: AuthRemoteDataSource
   let mockHttpClient: Partial<AxiosInstance>
 
   const mockAuthSession = {
-    accessToken: 'access-token',
+    accessToken: faker.internet.jwt(),
     accessTokenExpiry: 3600,
-    refreshToken: 'refresh-token',
+    refreshToken: faker.internet.jwt(),
     refreshTokenExpiry: 86400,
-  }
-
-  const mockUserResponse = {
-    id: '1',
-    name: 'Test User',
-    email: 'test@example.com',
-    createdAt: new Date(),
   }
 
   beforeEach(() => {
@@ -29,7 +24,10 @@ describe('AuthRemoteDataSource', () => {
   })
 
   it('signin calls post with correct url and data and returns response', async () => {
-    const request = { email: 'test@example.com', password: 'password123' }
+    const request = {
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+    }
     ;(mockHttpClient.post as Mock).mockResolvedValue({ data: mockAuthSession })
 
     const result = await dataSource.signin(request)
@@ -41,25 +39,24 @@ describe('AuthRemoteDataSource', () => {
     expect(result).toEqual(mockAuthSession)
   })
 
-  it('signup calls post with correct url and data and returns response', async () => {
+  it('signup calls post with correct url and data', async () => {
     const request = {
-      name: 'Test User',
-      email: 'test@example.com',
-      password: 'password123',
+      name: faker.person.firstName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
     }
-    ;(mockHttpClient.post as Mock).mockResolvedValue({ data: mockUserResponse })
+    ;(mockHttpClient.post as Mock).mockResolvedValue({ data: {} })
 
-    const result = await dataSource.signup(request)
+    await dataSource.signup(request)
 
     expect(mockHttpClient.post).toHaveBeenCalledWith(
       '/api/v1/auth/signup',
       request
     )
-    expect(result).toEqual(mockUserResponse)
   })
 
   it('signout calls delete with correct url and refresh token', async () => {
-    const refreshToken = 'refresh-token-123'
+    const refreshToken = faker.internet.jwt()
     ;(mockHttpClient.delete as Mock).mockResolvedValue({})
 
     await dataSource.signout(refreshToken)

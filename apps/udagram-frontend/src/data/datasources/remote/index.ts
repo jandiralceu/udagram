@@ -1,2 +1,3 @@
-export * from './auth_remote_datasource'
-export * from './user_remote_datasource'
+export * from './auth.remote.datasource'
+export * from './user.remote.datasource'
+export * from './feed.remote.datasource'

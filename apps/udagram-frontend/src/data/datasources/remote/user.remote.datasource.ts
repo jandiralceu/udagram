@@ -1,8 +1,8 @@
 import type { AxiosInstance } from 'axios'
-import type { User } from '@domain/entities'
+import type { UserModel } from '../../models'
 
 export interface IUserRemoteDataSource {
-  getProfile(): Promise<User>
+  getProfile(): Promise<UserModel>
 }
 
 export class UserRemoteDataSource implements IUserRemoteDataSource {
@@ -13,7 +13,8 @@ export class UserRemoteDataSource implements IUserRemoteDataSource {
     this.#httpClient = httpClient
   }
 
-  async getProfile(): Promise<User> {
-    return (await this.#httpClient.get<User>(`${this.#url}/me`)).data
+  async getProfile(): Promise<UserModel> {
+    const response = await this.#httpClient.get<UserModel>(`${this.#url}/me`)
+    return response.data
   }
 }
