@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import log from 'loglevel'
 import type { Register } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Box, CircularProgress, Typography } from '@mui/material'
 
 import type { signinRequest, signupRequest } from '@domain/entities'
 import type { IAuthRepository, IUserRepository } from '@domain/repositories'
@@ -35,7 +36,12 @@ export function AuthProvider({
 
   const isAuthenticated = !!user
 
-  const { mutateAsync: signinHandler, status: signinStatus } = useMutation({
+  const {
+    mutateAsync: signinHandler,
+    status: signinStatus,
+    isSuccess: isSigninSuccess,
+    data: signinData,
+  } = useMutation({
     mutationFn: async (data: signinRequest) => {
       return await authRepository.signin(data)
     },
@@ -99,11 +105,13 @@ export function AuthProvider({
     retry: false,
   })
 
+  const isAuthenticating = signinStatus === 'pending'
+
   const value = useMemo(
     () => ({
       user,
       isAuthenticated,
-      isAuthenticating: signinStatus === 'pending',
+      isAuthenticating,
       signin: signinHandler,
       signup: signupHandler,
       signout: signOutHandler,
@@ -112,7 +120,7 @@ export function AuthProvider({
     [
       user,
       isAuthenticated,
-      signinStatus,
+      isAuthenticating,
       signinHandler,
       signupHandler,
       signOutHandler,
@@ -120,9 +128,60 @@ export function AuthProvider({
     ]
   )
 
-  if (isGettingProfile) {
-    return <div>Loading...</div>
+  const loadingMessage = useMemo(() => {
+    if (isAuthenticating) {
+      return signinData
+        ? 'Fetching your profile...'
+        : 'Verifying credentials...'
+    }
+    if (isSigninSuccess && !user) return 'Finalizing...'
+    if (isGettingProfile && !user) return 'Checking your session...'
+    return null
+  }, [isAuthenticating, signinData, isSigninSuccess, user, isGettingProfile])
+
+  if (loadingMessage) {
+    return <AuthLoadingOverlay message={loadingMessage} />
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+/**
+ * Isolated loading overlay for the authentication process.
+ */
+function AuthLoadingOverlay({ message }: { readonly message: string }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        width: '100vw',
+        gap: 2,
+        bgcolor: 'background.default',
+      }}
+    >
+      <CircularProgress
+        size={40}
+        thickness={4}
+        sx={{ color: 'primary.main' }}
+      />
+      <Typography
+        variant="body1"
+        sx={{
+          color: 'text.secondary',
+          fontWeight: 500,
+          animation: 'pulse 2s infinite ease-in-out',
+          '@keyframes pulse': {
+            '0%, 100%': { opacity: 1 },
+            '50%': { opacity: 0.5 },
+          },
+        }}
+      >
+        {message}
+      </Typography>
+    </Box>
+  )
 }
