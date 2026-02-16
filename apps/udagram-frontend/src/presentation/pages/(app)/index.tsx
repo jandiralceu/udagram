@@ -1,12 +1,12 @@
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-
-import { CreateFeedForm, FeedCard } from './-components/feed'
-import { Header } from '@presentation/components/layout'
-import { FeedFactory } from '@factories/index'
 import { useQuery } from '@tanstack/react-query'
 import { QueryKeys } from '@presentation/utils/constants'
+
+import { FeedFactory } from '@factories/index'
+import Header from './-components/Menu'
+import { CreateFeedForm, FeedCard } from './-components/feed'
 
 export const Route = createFileRoute('/(app)/')({
   beforeLoad: ({ context, location }) => {
@@ -32,7 +32,6 @@ function RouteComponent() {
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    enabled: true,
   })
 
   return (

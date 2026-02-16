@@ -6,7 +6,7 @@ import Container from '@mui/material/Container'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useAuth } from '@presentation/hooks/useAuth'
 
-export function Header() {
+export default function Header() {
   const { signout } = useAuth()
 
   return (
