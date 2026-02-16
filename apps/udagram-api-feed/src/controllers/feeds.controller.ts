@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
+import { ErrorCodes } from '../lib/errors.js'
 import * as feedService from '../services/feeds.service.js'
 import type { GetFeedParams } from '../schemas/feeds.schema.js'
 import { CreateFeedMultipartSchema } from '../schemas/feeds.schema.js'
@@ -20,7 +21,10 @@ export const getFeedById = async (
   const feed = await feedService.findById(feedId)
 
   if (!feed) {
-    return reply.status(404).send({ message: 'Feed not found' })
+    return reply.status(404).send({
+      message: 'Feed not found',
+      code: ErrorCodes.FEED_NOT_FOUND,
+    })
   }
 
   return reply.send(feed)
@@ -82,11 +86,17 @@ export const createFeed = async (
     const { filePayload, caption } = await processMultipartRequest(request)
 
     if (!filePayload) {
-      return reply.status(400).send({ message: 'File is required' })
+      return reply.status(400).send({
+        message: 'File is required',
+        code: ErrorCodes.NO_FILE_UPLOADED,
+      })
     }
 
     if (!caption) {
-      return reply.status(400).send({ message: 'Caption is required' })
+      return reply.status(400).send({
+        message: 'Caption is required',
+        code: ErrorCodes.VALIDATION_ERROR,
+      })
     }
 
     const payload = {
@@ -100,6 +110,7 @@ export const createFeed = async (
     if (!result.success) {
       return reply.status(400).send({
         message: 'Invalid input',
+        code: ErrorCodes.VALIDATION_ERROR,
         errors: result.error.issues,
       })
     }
@@ -113,7 +124,10 @@ export const createFeed = async (
     return reply.status(201).send(newFeed)
   } catch (error) {
     request.log.error(error)
-    return reply.status(500).send({ message: 'Internal Server Error' })
+    return reply.status(500).send({
+      message: 'Internal Server Error',
+      code: ErrorCodes.INTERNAL_ERROR,
+    })
   }
 }
 

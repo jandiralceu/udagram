@@ -25,6 +25,7 @@ const ERROR_MESSAGES: Record<number | string, string> = {
   INVALID_CREDENTIALS: 'The email or password you entered is incorrect.',
   FILE_TOO_LARGE: 'The selected file is too large (max 5MB).',
   INVALID_FILE_TYPE: 'Only image files (JPEG, PNG, WEBP, GIF) are allowed.',
+  FEED_NOT_FOUND: 'The requested post could not be found.',
 }
 
 const FALLBACK_MESSAGE = 'An unexpected error occurred. Please try again.'

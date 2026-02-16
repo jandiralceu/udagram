@@ -33,6 +33,11 @@ export default async function authRoutes(
           201: SignupResponseSchema,
           400: z.object({
             message: z.string(),
+            code: z.string().optional(),
+          }),
+          409: z.object({
+            message: z.string(),
+            code: z.string().optional(),
           }),
         },
       },
@@ -51,6 +56,7 @@ export default async function authRoutes(
           200: TokenResponseSchema,
           401: z.object({
             message: z.string(),
+            code: z.string().optional(),
           }),
         },
       },

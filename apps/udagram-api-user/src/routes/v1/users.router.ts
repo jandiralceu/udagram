@@ -52,6 +52,7 @@ export default async function usersRoutes(
           200: UserResponseSchema,
           404: z.object({
             message: z.string(),
+            code: z.string().optional(),
           }),
         },
       },
@@ -71,6 +72,7 @@ export default async function usersRoutes(
           200: UserResponseSchema,
           400: z.object({
             message: z.string(),
+            code: z.string().optional(),
           }),
         },
       },
@@ -91,6 +93,7 @@ export default async function usersRoutes(
           200: UserResponseSchema,
           400: z.object({
             message: z.string(),
+            code: z.string().optional(),
           }),
         },
       },

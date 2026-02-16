@@ -50,6 +50,7 @@ export default async function feedRoutes(
           200: FeedResponseSchema,
           404: z.object({
             message: z.string(),
+            code: z.string().optional(),
           }),
         },
       },
@@ -72,6 +73,7 @@ export default async function feedRoutes(
           201: FeedResponseSchema,
           400: z.object({
             message: z.string(),
+            code: z.string().optional(),
           }),
         },
       },
