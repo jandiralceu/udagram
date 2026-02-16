@@ -1,3 +1,4 @@
+import log from 'loglevel'
 import { useState, useRef } from 'react'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
@@ -5,7 +6,6 @@ import DialogContent from '@mui/material/DialogContent'
 import Box from '@mui/material/Box'
 import Avatar from '@mui/material/Avatar'
 import Typography from '@mui/material/Typography'
-import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import CameraIcon from '@mui/icons-material/PhotoCamera'
@@ -35,6 +35,7 @@ export function ProfileModal({ open, onClose }: Props) {
       toast.success('Avatar atualizado com sucesso!')
     } catch (error) {
       toast.error('Erro ao atualizar avatar. Tente novamente.')
+      log.error('Error updating avatar:', error)
     } finally {
       setIsUploading(false)
     }

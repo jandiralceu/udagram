@@ -1,3 +1,4 @@
+import { Activity } from 'react'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import { createFileRoute, redirect } from '@tanstack/react-router'
@@ -6,7 +7,12 @@ import { QueryKeys } from '@presentation/utils/constants'
 
 import { FeedFactory } from '@factories/index'
 import Header from './-components/Menu'
-import { CreateFeedForm, FeedCard } from './-components/feed'
+import {
+  CreateFeedForm,
+  FeedCard,
+  FeedCardSkeleton,
+  EmptyFeedState,
+} from './-components/feed'
 
 export const Route = createFileRoute('/(app)/')({
   beforeLoad: ({ context, location }) => {
@@ -49,11 +55,23 @@ function RouteComponent() {
         <Container maxWidth="sm">
           <CreateFeedForm />
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 6 }}>
-            {isLoading && <div>Loading...</div>}
+            <Activity mode={isLoading ? 'visible' : 'hidden'}>
+              {['skeleton-1', 'skeleton-2', 'skeleton-3'].map(key => (
+                <FeedCardSkeleton key={key} />
+              ))}
+            </Activity>
 
-            {feeds?.map(feed => (
-              <FeedCard key={feed.id} {...feed} />
-            ))}
+            <Activity mode={!isLoading && feeds?.length ? 'visible' : 'hidden'}>
+              {feeds?.map(feed => (
+                <FeedCard key={feed.id} {...feed} />
+              ))}
+            </Activity>
+
+            <Activity
+              mode={!isLoading && feeds?.length === 0 ? 'visible' : 'hidden'}
+            >
+              <EmptyFeedState />
+            </Activity>
           </Box>
         </Container>
       </Box>
