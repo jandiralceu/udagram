@@ -12,6 +12,7 @@ import type { signinRequest } from '@domain/entities'
 import { useAuth } from '@presentation/hooks/useAuth'
 import { TextInput } from '@presentation/components/widgets'
 import { useEffect } from 'react'
+import { parseError } from '@presentation/utils/error_handler'
 
 export const Route = createFileRoute('/(auth)/signin/')({
   component: RouteComponent,
@@ -43,8 +44,8 @@ function RouteComponent() {
 
   const { mutate } = useMutation({
     mutationFn: (data: signinRequest) => signin(data),
-    onError(_error) {
-      toast.error('Error signing in')
+    onError(error) {
+      toast.error(parseError(error).message)
     },
     retry: false,
   })

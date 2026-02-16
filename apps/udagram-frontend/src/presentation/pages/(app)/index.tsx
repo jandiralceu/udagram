@@ -6,6 +6,7 @@ import Container from '@mui/material/Container'
 import { toast } from 'sonner'
 
 import { QueryKeys } from '@presentation/utils/constants'
+import { parseError } from '@presentation/utils/error_handler'
 import { FeedFactory } from '@factories/index'
 import { useAuth } from '@presentation/hooks/useAuth'
 
@@ -56,8 +57,8 @@ function RouteComponent() {
       toast.success('Wait, that was easy! Post deleted.')
       queryClient.invalidateQueries({ queryKey: [QueryKeys.feeds] })
     },
-    onError: () => {
-      toast.error('Failed to delete post. Please try again.')
+    onError: error => {
+      toast.error(parseError(error).message)
     },
     onSettled: (_data, _error, id) => {
       setDeletingIds(prev => prev.filter(deletingId => deletingId !== id))

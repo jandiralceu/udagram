@@ -1,4 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
+import { ErrorCodes } from '../../lib/errors.js'
 import * as usersService from '../../services/users.service.js'
 import type { UpdateUserBody } from '../../schemas/users.schema.js'
 import { UpdateUserAvatarBodySchema } from '../../schemas/users.schema.js'
@@ -11,7 +12,10 @@ export const getProfile = async (
   const profile = await usersService.getUserById(userId)
 
   if (!profile) {
-    return reply.status(404).send({ message: 'User not found' })
+    return reply.status(404).send({
+      message: 'User not found',
+      code: ErrorCodes.USER_NOT_FOUND,
+    })
   }
 
   return reply.send(profile)
@@ -22,7 +26,10 @@ export const getById = async (request: FastifyRequest, reply: FastifyReply) => {
   const user = await usersService.getUserById(userId)
 
   if (!user) {
-    return reply.status(404).send({ message: 'User not found' })
+    return reply.status(404).send({
+      message: 'User not found',
+      code: ErrorCodes.USER_NOT_FOUND,
+    })
   }
 
   return reply.send(user)
@@ -47,7 +54,10 @@ export const updateAvatar = async (
   const data = await request.file()
 
   if (!data) {
-    return reply.status(400).send({ message: 'No file uploaded' })
+    return reply.status(400).send({
+      message: 'No file uploaded',
+      code: ErrorCodes.NO_FILE_UPLOADED,
+    })
   }
 
   const buffer = await data.toBuffer()
@@ -65,6 +75,7 @@ export const updateAvatar = async (
   if (!validation.success) {
     return reply.status(400).send({
       message: 'Invalid file',
+      code: ErrorCodes.VALIDATION_ERROR,
       errors: validation.error.issues,
     })
   }

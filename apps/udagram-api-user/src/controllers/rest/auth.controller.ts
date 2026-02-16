@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
+import { ErrorCodes } from '../../lib/errors.js'
 import * as usersService from '../../services/users.service.js'
 import { verifyPassword } from '../../services/password.service.js'
 import * as dynamoService from '@udagram/fastify-dynamo-plugin'
@@ -23,13 +24,19 @@ export const signin = async (
   const user = await usersService.getUserByEmail(email)
 
   if (!user) {
-    return reply.status(401).send({ message: 'Invalid credentials' })
+    return reply.status(401).send({
+      message: 'Invalid credentials',
+      code: ErrorCodes.INVALID_CREDENTIALS,
+    })
   }
 
   const isPasswordValid = await verifyPassword(password, user.password)
 
   if (!isPasswordValid) {
-    return reply.status(401).send({ message: 'Invalid credentials' })
+    return reply.status(401).send({
+      message: 'Invalid credentials',
+      code: ErrorCodes.INVALID_CREDENTIALS,
+    })
   }
 
   const accessToken = await reply.jwtSign(
@@ -74,7 +81,10 @@ export const signup = async (
     return reply.status(201).send(newUser)
   } catch (error) {
     if (error instanceof Error && error.message === 'User already exists') {
-      return reply.status(409).send({ message: 'User already exists' })
+      return reply.status(409).send({
+        message: 'User already exists',
+        code: ErrorCodes.USER_ALREADY_EXISTS,
+      })
     }
     throw error
   }
@@ -94,7 +104,10 @@ export const refresh = async (
     payload = request.server.jwt.verify<{ sub: string }>(refreshToken)
   } catch (error) {
     request.log.error(error)
-    return reply.status(401).send({ message: 'Invalid refresh token' })
+    return reply.status(401).send({
+      message: 'Invalid refresh token',
+      code: ErrorCodes.INVALID_REFRESH_TOKEN,
+    })
   }
 
   const userId = payload.sub
@@ -106,7 +119,10 @@ export const refresh = async (
   )
 
   if (!storedToken) {
-    return reply.status(401).send({ message: 'Invalid refresh token' })
+    return reply.status(401).send({
+      message: 'Invalid refresh token',
+      code: ErrorCodes.INVALID_REFRESH_TOKEN,
+    })
   }
 
   await dynamoService.deleteItem(

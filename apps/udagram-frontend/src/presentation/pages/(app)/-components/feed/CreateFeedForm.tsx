@@ -25,6 +25,7 @@ import type { CreateFeedRequest } from '@domain/entities'
 
 import { useAuth } from '../../../../hooks/useAuth'
 import { QueryKeys } from '../../../../utils/constants'
+import { parseError } from '../../../../utils/error_handler'
 
 const MAX_CHARS = 280
 
@@ -80,8 +81,8 @@ export function CreateFeedForm() {
       if (fileInputRef.current) fileInputRef.current.value = ''
       queryClient.invalidateQueries({ queryKey: [QueryKeys.feeds] })
     },
-    onError: () => {
-      toast.error('Something went wrong. Please try again.')
+    onError: error => {
+      toast.error(parseError(error).message)
     },
   })
 

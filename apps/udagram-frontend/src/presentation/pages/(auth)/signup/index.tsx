@@ -11,6 +11,7 @@ import { useMutation } from '@tanstack/react-query'
 import type { signupRequest } from '@domain/entities'
 import { useAuth } from '@presentation/hooks/useAuth'
 import { TextInput, TermsAcceptance } from '@presentation/components/widgets'
+import { parseError } from '@presentation/utils/error_handler'
 
 export const Route = createFileRoute('/(auth)/signup/')({
   component: RouteComponent,
@@ -53,8 +54,8 @@ function RouteComponent() {
     onSuccess: () => {
       toast.success('User created successfully')
     },
-    onError(_error) {
-      toast.error('Error creating user')
+    onError(error) {
+      toast.error(parseError(error).message)
     },
     retry: false,
   })

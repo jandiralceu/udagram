@@ -17,6 +17,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@presentation/hooks/useAuth'
 import { UserFactory } from '@factories/index'
 import { QueryKeys } from '@presentation/utils/constants'
+import { parseError } from '@presentation/utils/error_handler'
 
 type Props = {
   open: boolean
@@ -37,7 +38,7 @@ export function ProfileModal({ open, onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: [QueryKeys.me] })
     },
     onError: error => {
-      toast.error('Error updating avatar. Please try again.')
+      toast.error(parseError(error).message)
       log.error('Error updating avatar:', error)
     },
   })
