@@ -8,6 +8,7 @@ import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
 import IconButton from '@mui/material/IconButton'
+import CircularProgress from '@mui/material/CircularProgress'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
@@ -27,6 +28,7 @@ export type FeedCardProps = {
   caption: string
   imageUrl?: string
   onDelete?: (id: string) => void
+  isDeleting?: boolean
 }
 
 export function FeedCard({
@@ -39,6 +41,7 @@ export function FeedCard({
   caption,
   imageUrl,
   onDelete,
+  isDeleting = false,
 }: FeedCardProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -84,25 +87,34 @@ export function FeedCard({
         }
         action={
           isOwner ? (
-            <>
-              <IconButton aria-label="settings" onClick={handleOpenMenu}>
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleCloseMenu}
-                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-              >
-                <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-                  <ListItemIcon sx={{ color: 'error.main' }}>
-                    <DeleteIcon fontSize="small" />
-                  </ListItemIcon>
-                  Delete
-                </MenuItem>
-              </Menu>
-            </>
+            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 40 }}>
+              {isDeleting ? (
+                <CircularProgress size={20} sx={{ mr: 1 }} />
+              ) : (
+                <>
+                  <IconButton aria-label="settings" onClick={handleOpenMenu}>
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleCloseMenu}
+                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  >
+                    <MenuItem
+                      onClick={handleDelete}
+                      sx={{ color: 'error.main' }}
+                    >
+                      <ListItemIcon sx={{ color: 'error.main' }}>
+                        <DeleteIcon fontSize="small" />
+                      </ListItemIcon>
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                </>
+              )}
+            </Box>
           ) : null
         }
         title={
