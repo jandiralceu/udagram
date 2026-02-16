@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import { TextInput } from './TextInput'
+import { TextInput } from '.'
 
 describe('TextInput', () => {
   it('renders correctly with default props', () => {

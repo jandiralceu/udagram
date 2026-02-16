@@ -2,7 +2,7 @@ import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
-import { CreateFeedForm, FeedCard } from '../../components/features/feed'
+import { CreateFeedForm, FeedCard } from './-features/feed'
 import { FeedFactory } from '@factories/index'
 import { useQuery } from '@tanstack/react-query'
 import { QueryKeys } from '@presentation/utils/constants'
@@ -45,7 +45,7 @@ function RouteComponent() {
     >
       <Container maxWidth="sm">
         <CreateFeedForm />
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 6 }}>
           {isLoading && <div>Loading...</div>}
 
           {feeds?.map(feed => (

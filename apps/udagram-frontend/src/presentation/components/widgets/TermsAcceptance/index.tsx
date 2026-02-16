@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import FormHelperText from '@mui/material/FormHelperText'
 
-export type TermsAcceptanceFieldProps = Readonly<{
+export type TermsAcceptanceProps = Readonly<{
   checked: boolean
   onChange: (checked: boolean) => void
   label: React.ReactNode
@@ -17,13 +17,13 @@ export type TermsAcceptanceFieldProps = Readonly<{
  * Campo reutilizável para aceite de termos, composto por um radio button,
  * texto de termos e mensagem de erro opcional.
  */
-export function TermsAcceptanceField({
+export function TermsAcceptance({
   checked,
   onChange,
   label,
   error,
   disabled = false,
-}: TermsAcceptanceFieldProps) {
+}: TermsAcceptanceProps) {
   const showError = Boolean(error)
 
   return (

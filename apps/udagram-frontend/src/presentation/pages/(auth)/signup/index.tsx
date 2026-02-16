@@ -10,10 +10,7 @@ import { useMutation } from '@tanstack/react-query'
 
 import type { signupRequest } from '@domain/entities'
 import { useAuth } from '@presentation/hooks/useAuth'
-import {
-  TextInput,
-  TermsAcceptanceField,
-} from '@presentation/components/widgets/inputs'
+import { TextInput, TermsAcceptance } from '@presentation/components/widgets'
 
 export const Route = createFileRoute('/(auth)/signup/')({
   component: RouteComponent,
@@ -112,7 +109,7 @@ function RouteComponent() {
             control={control}
             name="termsAccepted"
             render={({ field }) => (
-              <TermsAcceptanceField
+              <TermsAcceptance
                 checked={field.value}
                 onChange={field.onChange}
                 label="I accept the terms and conditions"

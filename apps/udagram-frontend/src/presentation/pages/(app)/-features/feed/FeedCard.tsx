@@ -74,7 +74,6 @@ export function FeedCard({
           image={imageUrl}
           alt="post content"
           sx={{
-            maxHeight: 500,
             width: '100%',
             objectFit: 'cover',
             borderTop: '1px solid',

@@ -10,7 +10,7 @@ import { useMutation } from '@tanstack/react-query'
 
 import type { signinRequest } from '@domain/entities'
 import { useAuth } from '@presentation/hooks/useAuth'
-import { TextInput } from '@presentation/components/widgets/inputs'
+import { TextInput } from '@presentation/components/widgets'
 
 export const Route = createFileRoute('/(auth)/signin/')({
   component: RouteComponent,
