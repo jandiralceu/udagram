@@ -1,10 +1,5 @@
 import type { IAuthRepository } from '@domain/repositories'
-import type {
-  AuthSession,
-  signinRequest,
-  signupRequest,
-  signupResponse,
-} from '@domain/entities'
+import type { signinRequest, signupRequest } from '@domain/entities'
 import { AuthStorage } from '@infra/cache/auth_storage'
 
 import type { IAuthRemoteDataSource } from '../datasources'
@@ -16,30 +11,27 @@ export class AuthRepository implements IAuthRepository {
     this.#remoteDataSource = remoteDataSource
   }
 
-  async signin(request: signinRequest): Promise<AuthSession> {
+  async signin(request: signinRequest): Promise<void> {
     try {
       const response = await this.#remoteDataSource.signin(request)
 
       const now = Math.floor(Date.now() / 1000)
-      const session: AuthSession = {
+
+      AuthStorage.save({
         accessToken: response.accessToken,
         accessTokenExpiry: now + response.accessTokenExpiry,
         refreshToken: response.refreshToken,
         refreshTokenExpiry: now + response.refreshTokenExpiry,
-      }
-
-      AuthStorage.save(session)
-      return session
+      })
     } catch (error) {
       console.error(error)
       throw error
     }
   }
 
-  async signup(request: signupRequest): Promise<signupResponse> {
+  async signup(request: signupRequest): Promise<void> {
     try {
-      const response = await this.#remoteDataSource.signup(request)
-      return response
+      await this.#remoteDataSource.signup(request)
     } catch (error) {
       console.error(error)
       throw error

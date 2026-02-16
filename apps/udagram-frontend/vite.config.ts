@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import path from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -14,13 +15,13 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@images': '/src/presentation/assets/images',
-      '@domain': '/src/domain',
-      '@infra': '/src/infra',
-      '@presentation': '/src/presentation',
-      '@data': '/src/data',
-      '@application': '/src/application',
-      '@factories': '/src/factories',
+      '@images': path.resolve(__dirname, './src/presentation/assets/images'),
+      '@domain': path.resolve(__dirname, './src/domain'),
+      '@infra': path.resolve(__dirname, './src/infra'),
+      '@presentation': path.resolve(__dirname, './src/presentation'),
+      '@data': path.resolve(__dirname, './src/data'),
+      '@application': path.resolve(__dirname, './src/application'),
+      '@factories': path.resolve(__dirname, './src/factories'),
     },
   },
   server: {

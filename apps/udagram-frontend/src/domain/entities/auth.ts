@@ -12,10 +12,3 @@ export type signupRequest = {
 }
 
 export type signupResponse = User
-
-export type AuthSession = {
-  accessToken: string
-  accessTokenExpiry: number
-  refreshToken: string
-  refreshTokenExpiry: number
-}

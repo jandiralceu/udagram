@@ -1,7 +1,7 @@
 import axios from 'axios'
 import log from 'loglevel'
 import { AuthStorage } from '../../cache/auth_storage'
-import type { AuthSession } from '@domain/entities'
+import type { AuthSessionModel } from '@data/models'
 
 /**
  * HTTP Client with support for header-based authentication and automatic token refresh.
@@ -46,7 +46,11 @@ let failedQueue: Array<{
  * Includes:
  * - /v1/auth/signin: Invalid credentials
  */
-const authEndpoints = new Set(['/v1/auth/signin', '/v1/auth/signup'])
+const authEndpoints = new Set([
+  '/v1/auth/signin',
+  '/v1/auth/signup',
+  '/v1/auth/refresh',
+])
 
 /**
  * Normalizes the URL for consistent comparison against the endpoint arrays.
@@ -101,12 +105,15 @@ const calculateExpiry = (expiryInSeconds: number) => {
  */
 const handleTokenRefresh = async (
   refreshToken: string
-): Promise<AuthSession> => {
-  const response = await refreshClient.post<AuthSession>('/v1/auth/refresh', {
-    refreshToken,
-  })
+): Promise<AuthSessionModel> => {
+  const response = await refreshClient.post<AuthSessionModel>(
+    '/v1/auth/refresh',
+    {
+      refreshToken,
+    }
+  )
 
-  const newSession: AuthSession = {
+  const newSession: AuthSessionModel = {
     accessToken: response.data.accessToken,
     accessTokenExpiry: calculateExpiry(response.data.accessTokenExpiry),
     refreshToken: response.data.refreshToken,
@@ -217,7 +224,7 @@ const REFRESH_THRESHOLD = 60
  * Singleton promise for the current refresh operation.
  * Ensures only one network request is made even if multiple calls overlap.
  */
-let refreshPromise: Promise<AuthSession> | null = null
+let refreshPromise: Promise<AuthSessionModel> | null = null
 
 /**
  * Timestamp of the last successful or attempted refresh to prevent loops.
@@ -228,7 +235,9 @@ let lastRefreshAttemptTime = 0
  * Executes a token refresh call and updates storage.
  * If a refresh is already in progress, returns the existing promise.
  */
-const executeRefresh = async (refreshToken: string): Promise<AuthSession> => {
+const executeRefresh = async (
+  refreshToken: string
+): Promise<AuthSessionModel> => {
   if (refreshPromise) return refreshPromise
 
   isRefreshing = true

@@ -1,18 +1,12 @@
 import { useContext, createContext } from 'react'
-import type {
-  AuthSession,
-  signinRequest,
-  signupRequest,
-  signupResponse,
-  User,
-} from '../../domain/entities'
+import type { signinRequest, signupRequest, User } from '../../domain/entities'
 
 export type AuthState = {
   user: User | undefined
   isAuthenticated: boolean
   isAuthenticating: boolean
-  signin(request: signinRequest): Promise<AuthSession>
-  signup(request: signupRequest): Promise<signupResponse>
+  signin(request: signinRequest): Promise<void>
+  signup(request: signupRequest): Promise<void>
   signout(): Promise<void>
 }
 
