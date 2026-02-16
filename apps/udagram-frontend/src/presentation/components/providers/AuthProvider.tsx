@@ -24,7 +24,11 @@ export function AuthProvider({
   router,
 }: Props) {
   const queryClient = useQueryClient()
-  const { data: user, isLoading: isGettingProfile } = useQuery({
+  const {
+    data: user,
+    isLoading: isGettingProfile,
+    isRefetching: isRefetchingProfile,
+  } = useQuery({
     queryKey: [QueryKeys.me],
     queryFn: () => userRepository.getProfile(),
     retry: false,
@@ -36,12 +40,7 @@ export function AuthProvider({
 
   const isAuthenticated = !!user
 
-  const {
-    mutateAsync: signinHandler,
-    status: signinStatus,
-    isSuccess: isSigninSuccess,
-    data: signinData,
-  } = useMutation({
+  const { mutateAsync: signinHandler, status: signinStatus } = useMutation({
     mutationFn: async (data: signinRequest) => {
       return await authRepository.signin(data)
     },
@@ -129,15 +128,13 @@ export function AuthProvider({
   )
 
   const loadingMessage = useMemo(() => {
-    if (isAuthenticating) {
-      return signinData
-        ? 'Fetching your profile...'
-        : 'Verifying credentials...'
+    if (signinStatus != 'idle') return null
+    if ((isGettingProfile && !user) || isRefetchingProfile) {
+      return 'Checking your session...'
     }
-    if (isSigninSuccess && !user) return 'Finalizing...'
-    if (isGettingProfile && !user) return 'Checking your session...'
+
     return null
-  }, [isAuthenticating, signinData, isSigninSuccess, user, isGettingProfile])
+  }, [signinStatus, isGettingProfile, user, isRefetchingProfile])
 
   if (loadingMessage) {
     return <AuthLoadingOverlay message={loadingMessage} />

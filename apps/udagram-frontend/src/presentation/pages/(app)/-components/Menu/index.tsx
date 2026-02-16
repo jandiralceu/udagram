@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import Avatar from '@mui/material/Avatar'
+import Tooltip from '@mui/material/Tooltip'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useAuth } from '@presentation/hooks/useAuth'
 import { ProfileModal } from '../ProfileModal'
@@ -49,35 +50,41 @@ export default function Header() {
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <IconButton
-                onClick={() => setProfileOpen(true)}
-                sx={{ p: 0.5 }}
-                title="My Profile"
-              >
-                <Avatar
-                  src={user?.avatar}
-                  sx={{
-                    width: 32,
-                    height: 32,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                  }}
-                />
-              </IconButton>
+              <Tooltip title="My Profile">
+                <span>
+                  <IconButton
+                    onClick={() => setProfileOpen(true)}
+                    sx={{ p: 0.5 }}
+                  >
+                    <Avatar
+                      src={user?.avatar}
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    />
+                  </IconButton>
+                </span>
+              </Tooltip>
 
-              <IconButton
-                onClick={() => signout()}
-                color="inherit"
-                title="Sign out"
-                sx={{
-                  '&:hover': {
-                    bgcolor: 'rgba(244, 33, 46, 0.1)',
-                    color: 'error.main',
-                  },
-                }}
-              >
-                <LogoutIcon fontSize="small" />
-              </IconButton>
+              <Tooltip title="Sign out">
+                <span>
+                  <IconButton
+                    onClick={() => signout()}
+                    color="inherit"
+                    sx={{
+                      '&:hover': {
+                        bgcolor: 'rgba(244, 33, 46, 0.1)',
+                        color: 'error.main',
+                      },
+                    }}
+                  >
+                    <LogoutIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
             </Box>
           </Toolbar>
         </Container>

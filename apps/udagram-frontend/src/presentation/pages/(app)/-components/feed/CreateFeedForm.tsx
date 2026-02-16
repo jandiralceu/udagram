@@ -218,38 +218,50 @@ export function CreateFeedForm() {
                 onChange={handleImageChange}
               />
               <Tooltip title="Media">
-                <IconButton
-                  color="primary"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isPending}
-                >
-                  <PhotoIcon fontSize="small" />
-                </IconButton>
+                <span>
+                  <IconButton
+                    color="primary"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isPending}
+                  >
+                    <PhotoIcon fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
               <Tooltip title="GIF">
-                <IconButton color="primary" disabled>
-                  <GifIcon fontSize="small" />
-                </IconButton>
+                <span>
+                  <IconButton color="primary" disabled>
+                    <GifIcon fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
               <Tooltip title="Poll">
-                <IconButton color="primary" disabled>
-                  <PollIcon fontSize="small" />
-                </IconButton>
+                <span>
+                  <IconButton color="primary" disabled>
+                    <PollIcon fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
               <Tooltip title="Emoji">
-                <IconButton color="primary" disabled>
-                  <EmojiIcon fontSize="small" />
-                </IconButton>
+                <span>
+                  <IconButton color="primary" disabled>
+                    <EmojiIcon fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
               <Tooltip title="Schedule">
-                <IconButton color="primary" disabled>
-                  <ScheduleIcon fontSize="small" />
-                </IconButton>
+                <span>
+                  <IconButton color="primary" disabled>
+                    <ScheduleIcon fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
               <Tooltip title="Location">
-                <IconButton color="primary" disabled>
-                  <LocationIcon fontSize="small" />
-                </IconButton>
+                <span>
+                  <IconButton color="primary" disabled>
+                    <LocationIcon fontSize="small" />
+                  </IconButton>
+                </span>
               </Tooltip>
             </Box>
 

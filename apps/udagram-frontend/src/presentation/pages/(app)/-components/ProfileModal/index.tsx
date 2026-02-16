@@ -42,8 +42,15 @@ export function ProfileModal({ open, onClose }: Props) {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="xs"
+      disableRestoreFocus
+    >
       <DialogTitle
+        component="div"
         sx={{
           m: 0,
           p: 2,
@@ -108,7 +115,7 @@ export function ProfileModal({ open, onClose }: Props) {
             </Typography>
           </Box>
 
-          <Box sx={{ width: '100%', pt: 2 }}>
+          <Box sx={{ width: '100%', textAlign: 'center' }}>
             <Typography
               variant="caption"
               color="text.disabled"

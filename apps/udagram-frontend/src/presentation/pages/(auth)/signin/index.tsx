@@ -11,6 +11,7 @@ import { useMutation } from '@tanstack/react-query'
 import type { signinRequest } from '@domain/entities'
 import { useAuth } from '@presentation/hooks/useAuth'
 import { TextInput } from '@presentation/components/widgets'
+import { useEffect } from 'react'
 
 export const Route = createFileRoute('/(auth)/signin/')({
   component: RouteComponent,
@@ -27,7 +28,7 @@ const schema = yup.object().shape({
 function RouteComponent() {
   const router = useRouter()
   const searchParams = Route.useSearch()
-  const { signin } = useAuth()
+  const { signin, isAuthenticating, isAuthenticated } = useAuth()
   const {
     handleSubmit,
     control,
@@ -42,9 +43,6 @@ function RouteComponent() {
 
   const { mutateAsync } = useMutation({
     mutationFn: async (data: signinRequest) => signin(data),
-    onSuccess: () => {
-      router.navigate({ to: searchParams.redirect || '/' })
-    },
     onError(_error) {
       toast.error('Error signing in')
     },
@@ -54,6 +52,12 @@ function RouteComponent() {
   const onSubmit: SubmitHandler<signinRequest> = async data => {
     await mutateAsync(data)
   }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.navigate({ to: searchParams.redirect || '/' })
+    }
+  }, [isAuthenticated, router, searchParams.redirect])
 
   return (
     <Box component="main">
@@ -93,6 +97,7 @@ function RouteComponent() {
             variant="contained"
             disabled={isSubmitting}
             sx={{ width: '100%' }}
+            loading={isAuthenticating}
           >
             Sign In
           </Button>
