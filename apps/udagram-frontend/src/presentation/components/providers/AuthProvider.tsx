@@ -66,13 +66,35 @@ export function AuthProvider({
     mutationFn: async () => {
       return await authRepository.signout()
     },
-    onSuccess: () => {
-      router.navigate({ to: '/signin', search: { redirect: '/' } })
+    onSuccess: async () => {
+      // Clear user data from cache and reset authentication state
+      queryClient.setQueryData([QueryKeys.me], null)
+      await queryClient.resetQueries({ queryKey: [QueryKeys.me] })
+
+      // Navigate to signin page
+      await router.navigate({ to: '/signin', search: { redirect: '/' } })
+
+      // Force router to re-evaluate guards
+      await router.invalidate()
 
       log.info('✅ Signout successful')
     },
     onError(error: unknown) {
       log.error('❌ Signout failed:', error)
+    },
+    retry: false,
+  })
+
+  const { mutateAsync: updateAvatarHandler } = useMutation({
+    mutationFn: async (file: File) => {
+      return await userRepository.updateAvatar(file)
+    },
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: [QueryKeys.me] })
+      log.info('✅ Avatar updated successfully')
+    },
+    onError(error: unknown) {
+      log.error('❌ Avatar update failed:', error)
     },
     retry: false,
   })
@@ -85,6 +107,7 @@ export function AuthProvider({
       signin: signinHandler,
       signup: signupHandler,
       signout: signOutHandler,
+      updateAvatar: updateAvatarHandler,
     }),
     [
       user,
@@ -93,6 +116,7 @@ export function AuthProvider({
       signinHandler,
       signupHandler,
       signOutHandler,
+      updateAvatarHandler,
     ]
   )
 

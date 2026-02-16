@@ -25,4 +25,20 @@ export class UserRepository implements IUserRepository {
       throw error
     }
   }
+
+  async updateAvatar(file: File): Promise<User> {
+    try {
+      const model = await this.#remoteDataSource.updateAvatar(file)
+      return {
+        id: model.id,
+        name: model.name,
+        email: model.email,
+        avatar: model.avatar ?? undefined,
+        createdAt: new Date(model.created_at),
+      }
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
 }
