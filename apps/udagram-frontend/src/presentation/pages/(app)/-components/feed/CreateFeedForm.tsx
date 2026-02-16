@@ -5,7 +5,6 @@ import Avatar from '@mui/material/Avatar'
 import IconButton from '@mui/material/IconButton'
 import InputBase from '@mui/material/InputBase'
 import CircularProgress from '@mui/material/CircularProgress'
-import Divider from '@mui/material/Divider'
 import Tooltip from '@mui/material/Tooltip'
 import FormHelperText from '@mui/material/FormHelperText'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -112,11 +111,11 @@ export function CreateFeedForm() {
   return (
     <Box
       sx={{
-        py: 1,
-        px: 2,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
+        p: 2,
         bgcolor: 'background.paper',
+        border: '1px solid',
+        borderRadius: 2,
+        borderColor: 'divider',
       }}
     >
       <Box
@@ -202,13 +201,12 @@ export function CreateFeedForm() {
             <FormHelperText error>{errors.file.message}</FormHelperText>
           )}
 
-          <Divider sx={{ mb: 1.5, mx: 0 }} />
-
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
+              mt: 3,
             }}
           >
             <Box sx={{ display: 'flex', ml: -1 }}>

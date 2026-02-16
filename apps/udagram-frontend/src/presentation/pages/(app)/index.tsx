@@ -1,11 +1,12 @@
 import { Activity } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { QueryKeys } from '@presentation/utils/constants'
 
+import { QueryKeys } from '@presentation/utils/constants'
 import { FeedFactory } from '@factories/index'
+
 import Header from './-components/Menu'
 import {
   CreateFeedForm,

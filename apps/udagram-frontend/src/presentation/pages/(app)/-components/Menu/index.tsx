@@ -52,7 +52,7 @@ export default function Header() {
               <IconButton
                 onClick={() => setProfileOpen(true)}
                 sx={{ p: 0.5 }}
-                title="Meu Perfil"
+                title="My Profile"
               >
                 <Avatar
                   src={user?.avatar}
@@ -68,7 +68,7 @@ export default function Header() {
               <IconButton
                 onClick={() => signout()}
                 color="inherit"
-                title="Sair"
+                title="Sign out"
                 sx={{
                   '&:hover': {
                     bgcolor: 'rgba(244, 33, 46, 0.1)',

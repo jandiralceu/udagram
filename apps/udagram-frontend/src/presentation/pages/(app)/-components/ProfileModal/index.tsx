@@ -32,9 +32,9 @@ export function ProfileModal({ open, onClose }: Props) {
     try {
       setIsUploading(true)
       await updateAvatar(file)
-      toast.success('Avatar atualizado com sucesso!')
+      toast.success('Avatar updated successfully!')
     } catch (error) {
-      toast.error('Erro ao atualizar avatar. Tente novamente.')
+      toast.error('Error updating avatar. Please try again.')
       log.error('Error updating avatar:', error)
     } finally {
       setIsUploading(false)
@@ -53,7 +53,7 @@ export function ProfileModal({ open, onClose }: Props) {
         }}
       >
         <Typography variant="h6" fontWeight={800}>
-          Perfil
+          Profile
         </Typography>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
@@ -114,11 +114,11 @@ export function ProfileModal({ open, onClose }: Props) {
               color="text.disabled"
               sx={{ display: 'block', mb: 1 }}
             >
-              MEMBRO DESDE
+              MEMBER SINCE
             </Typography>
             <Typography variant="body2" fontWeight={600}>
               {user?.createdAt
-                ? new Date(user.createdAt).toLocaleDateString('pt-BR', {
+                ? new Date(user.createdAt).toLocaleDateString('en-US', {
                     month: 'long',
                     year: 'numeric',
                   })

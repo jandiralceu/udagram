@@ -14,8 +14,8 @@ export type TermsAcceptanceProps = Readonly<{
 /**
  * TermsAcceptanceField
  *
- * Campo reutilizável para aceite de termos, composto por um radio button,
- * texto de termos e mensagem de erro opcional.
+ * Reusable field for terms acceptance, composed of a radio button,
+ * terms text and an optional error message.
  */
 export function TermsAcceptance({
   checked,
@@ -38,7 +38,6 @@ export function TermsAcceptance({
         }
         label={label}
         sx={{
-          // mt: 6,
           '& .MuiFormControlLabel-label': {
             fontSize: '0.8rem',
           },
