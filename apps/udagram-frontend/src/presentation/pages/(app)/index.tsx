@@ -47,7 +47,7 @@ function RouteComponent() {
     refetchOnReconnect: false,
   })
 
-  const { mutateAsync: deleteFeed } = useMutation({
+  const { mutate: deleteFeed } = useMutation({
     mutationFn: (id: string) => feedbackRepository.deleteFeed(id),
     onMutate: id => {
       setDeletingIds(prev => [...prev, id])
@@ -64,12 +64,8 @@ function RouteComponent() {
     },
   })
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteFeed(id)
-    } catch {
-      // Error handled by mutation onError
-    }
+  const handleDelete = (id: string) => {
+    deleteFeed(id)
   }
 
   return (
