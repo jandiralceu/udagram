@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Avatar from '@mui/material/Avatar'
@@ -7,30 +8,61 @@ import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
 import IconButton from '@mui/material/IconButton'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
 import FavoriteIcon from '@mui/icons-material/FavoriteBorder'
 import ChatBubbleIcon from '@mui/icons-material/ChatBubbleOutline'
 import ShareIcon from '@mui/icons-material/Share'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import DeleteIcon from '@mui/icons-material/DeleteOutline'
 
 export type FeedCardProps = {
+  id: string
+  userId: string
+  currentUserId?: string
   userName: string
   userAvatar?: string | null
   createdAt: Date
   caption: string
   imageUrl?: string
+  onDelete?: (id: string) => void
 }
 
 export function FeedCard({
+  id,
+  userId,
+  currentUserId,
   userName,
   userAvatar,
   createdAt,
   caption,
   imageUrl,
+  onDelete,
 }: FeedCardProps) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null)
+  }
+
+  const handleDelete = () => {
+    handleCloseMenu()
+    onDelete?.(id)
+  }
+
+  const isOwner = currentUserId === userId
+
   const date = new Intl.DateTimeFormat('en-US', {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(createdAt)
+
   return (
     <Card
       elevation={0}
@@ -51,9 +83,27 @@ export function FeedCard({
           <Avatar src={userAvatar ?? undefined} aria-label="user avatar" />
         }
         action={
-          <IconButton aria-label="settings">
-            <MoreVertIcon />
-          </IconButton>
+          isOwner ? (
+            <>
+              <IconButton aria-label="settings" onClick={handleOpenMenu}>
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleCloseMenu}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              >
+                <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+                  <ListItemIcon sx={{ color: 'error.main' }}>
+                    <DeleteIcon fontSize="small" />
+                  </ListItemIcon>
+                  Delete
+                </MenuItem>
+              </Menu>
+            </>
+          ) : null
         }
         title={
           <Typography variant="subtitle1" fontWeight="bold">

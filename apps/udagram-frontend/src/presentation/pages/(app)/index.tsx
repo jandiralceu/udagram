@@ -1,11 +1,13 @@
 import { Activity } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
+import { toast } from 'sonner'
 
 import { QueryKeys } from '@presentation/utils/constants'
 import { FeedFactory } from '@factories/index'
+import { useAuth } from '@presentation/hooks/useAuth'
 
 import Header from './-components/Menu'
 import {
@@ -32,6 +34,9 @@ export const Route = createFileRoute('/(app)/')({
 const feedbackRepository = FeedFactory.createRepository()
 
 function RouteComponent() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
   const { data: feeds, isLoading } = useQuery({
     queryKey: [QueryKeys.feeds],
     queryFn: () => feedbackRepository.getFeeds(),
@@ -40,6 +45,21 @@ function RouteComponent() {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   })
+
+  const { mutateAsync: deleteFeed } = useMutation({
+    mutationFn: (id: string) => feedbackRepository.deleteFeed(id),
+    onSuccess: () => {
+      toast.success('Wait, that was easy! Post deleted.')
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.feeds] })
+    },
+    onError: () => {
+      toast.error('Failed to delete post. Please try again.')
+    },
+  })
+
+  const handleDelete = async (id: string) => {
+    await deleteFeed(id)
+  }
 
   return (
     <>
@@ -64,7 +84,12 @@ function RouteComponent() {
 
             <Activity mode={!isLoading && feeds?.length ? 'visible' : 'hidden'}>
               {feeds?.map(feed => (
-                <FeedCard key={feed.id} {...feed} />
+                <FeedCard
+                  key={feed.id}
+                  {...feed}
+                  currentUserId={user?.id}
+                  onDelete={handleDelete}
+                />
               ))}
             </Activity>
 
