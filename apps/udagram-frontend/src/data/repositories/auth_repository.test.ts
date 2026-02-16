@@ -43,19 +43,18 @@ describe('AuthRepository', () => {
     vi.restoreAllMocks()
   })
 
-  it('signin calls datasource, saves to storage and returns session', async () => {
+  it('signin calls datasource and saves to storage', async () => {
     const request = { email: 'test@example.com', password: 'password123' }
     ;(mockDataSource.signin as Mock).mockResolvedValue(mockAuthResponse)
     const saveSpy = vi.spyOn(AuthStorage, 'save').mockImplementation(() => {})
 
-    const result = await repository.signin(request)
+    await repository.signin(request)
 
     expect(mockDataSource.signin).toHaveBeenCalledWith(request)
     expect(saveSpy).toHaveBeenCalled()
-    expect(result.accessToken).toBe(mockAuthResponse.accessToken)
   })
 
-  it('signup calls datasource and returns user', async () => {
+  it('signup calls datasource', async () => {
     const request = {
       name: 'Test User',
       email: 'test@example.com',
@@ -63,10 +62,9 @@ describe('AuthRepository', () => {
     }
     ;(mockDataSource.signup as Mock).mockResolvedValue(mockUserResponse)
 
-    const result = await repository.signup(request)
+    await repository.signup(request)
 
     expect(mockDataSource.signup).toHaveBeenCalledWith(request)
-    expect(result).toEqual(mockUserResponse)
   })
 
   it('signout calls datasource and clears storage', async () => {

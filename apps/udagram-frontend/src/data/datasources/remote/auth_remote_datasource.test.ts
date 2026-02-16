@@ -34,17 +34,27 @@ describe('AuthRemoteDataSource', () => {
 
     const result = await dataSource.signin(request)
 
-    expect(mockHttpClient.post).toHaveBeenCalledWith('/api/v1/auth/signin', request)
+    expect(mockHttpClient.post).toHaveBeenCalledWith(
+      '/api/v1/auth/signin',
+      request
+    )
     expect(result).toEqual(mockAuthSession)
   })
 
   it('signup calls post with correct url and data and returns response', async () => {
-    const request = { name: 'Test User', email: 'test@example.com', password: 'password123' }
+    const request = {
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'password123',
+    }
     ;(mockHttpClient.post as Mock).mockResolvedValue({ data: mockUserResponse })
 
     const result = await dataSource.signup(request)
 
-    expect(mockHttpClient.post).toHaveBeenCalledWith('/api/v1/auth/signup', request)
+    expect(mockHttpClient.post).toHaveBeenCalledWith(
+      '/api/v1/auth/signup',
+      request
+    )
     expect(result).toEqual(mockUserResponse)
   })
 
