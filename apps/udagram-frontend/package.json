@@ -24,7 +24,6 @@
     "@tanstack/react-router": "^1.160.0",
     "@tanstack/react-router-devtools": "^1.160.0",
     "axios": "^1.13.5",
-    "dayjs": "^1.11.19",
     "loglevel": "^1.9.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

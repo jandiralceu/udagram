@@ -2,7 +2,7 @@ import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
-import { CreateFeedForm, FeedCard } from './-features/feed'
+import { CreateFeedForm, FeedCard } from './-components/feed'
 import { FeedFactory } from '@factories/index'
 import { useQuery } from '@tanstack/react-query'
 import { QueryKeys } from '@presentation/utils/constants'

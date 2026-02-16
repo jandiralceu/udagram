@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Avatar from '@mui/material/Avatar'
@@ -7,45 +7,102 @@ import InputBase from '@mui/material/InputBase'
 import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
 import Tooltip from '@mui/material/Tooltip'
-
+import FormHelperText from '@mui/material/FormHelperText'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useForm, Controller, useWatch } from 'react-hook-form'
 import PhotoIcon from '@mui/icons-material/ImageOutlined'
+import GifIcon from '@mui/icons-material/GifBoxOutlined'
+import PollIcon from '@mui/icons-material/PollOutlined'
+import EmojiIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined'
+import ScheduleIcon from '@mui/icons-material/CalendarTodayOutlined'
+import LocationIcon from '@mui/icons-material/LocationOnOutlined'
 import CloseIcon from '@mui/icons-material/Close'
+import { toast } from 'sonner'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+import { FeedFactory } from '@factories/index'
+import type { CreateFeedRequest } from '@domain/entities'
 
 import { useAuth } from '../../../../hooks/useAuth'
+import { QueryKeys } from '../../../../utils/constants'
 
 const MAX_CHARS = 280
 
+const schema = yup.object().shape({
+  caption: yup
+    .string()
+    .required('A caption is required')
+    .max(MAX_CHARS, `Post must be less than ${MAX_CHARS} characters`),
+  file: yup.mixed<File>().required('An image is required'),
+})
+
+const feedRepository = FeedFactory.createRepository()
+
 export function CreateFeedForm() {
   const { user } = useAuth()
-  const [caption, setCaption] = useState('')
-  const [image, setImage] = useState<string | null>(null)
+  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImage(reader.result as string)
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<CreateFeedRequest>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      caption: '',
+    },
+    mode: 'onChange',
+  })
+
+  const caption = useWatch({ control, name: 'caption', defaultValue: '' })
+  const file = useWatch({ control, name: 'file' })
+
+  // Derive preview URL from the file in the form state
+  const imagePreview = file ? URL.createObjectURL(file) : null
+
+  // Cleanup object URL when component unmounts or file changes
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview)
       }
-      reader.readAsDataURL(file)
+    }
+  }, [imagePreview])
+
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: (data: CreateFeedRequest) => feedRepository.createFeed(data),
+    onSuccess: () => {
+      toast.success('Wait, that was cool! Your post is live.')
+      reset({ caption: '', file: undefined as unknown as File })
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.feeds] })
+    },
+    onError: () => {
+      toast.error('Something went wrong. Please try again.')
+    },
+  })
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      setValue('file', selectedFile, { shouldValidate: true })
     }
   }
 
   const handleRemoveImage = () => {
-    setImage(null)
+    // Using unknown cast instead of any to satisfy lint while maintaining functionality
+    setValue('file', undefined as unknown as File, { shouldValidate: true })
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!caption.trim() && !image) return
-
-    console.log({ caption, image })
-    setCaption('')
-    setImage(null)
+  const onSubmit = async (data: CreateFeedRequest) => {
+    await mutateAsync(data)
   }
 
   const charCount = caption.length
@@ -64,7 +121,7 @@ export function CreateFeedForm() {
     >
       <Box
         component="form"
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         sx={{ display: 'flex', gap: 1.5 }}
       >
         <Avatar
@@ -74,23 +131,31 @@ export function CreateFeedForm() {
 
         <Box sx={{ flex: 1 }}>
           <Box sx={{ pt: 1 }}>
-            <InputBase
-              multiline
-              fullWidth
-              placeholder="What's happening?"
-              value={caption}
-              onChange={e => setCaption(e.target.value)}
-              sx={{
-                fontSize: '1.25rem',
-                color: 'text.primary',
-                '& .MuiInputBase-input::placeholder': {
-                  opacity: 0.7,
-                },
-              }}
+            <Controller
+              name="caption"
+              control={control}
+              render={({ field }) => (
+                <InputBase
+                  {...field}
+                  multiline
+                  fullWidth
+                  placeholder="What's happening?"
+                  sx={{
+                    fontSize: '1.25rem',
+                    color: 'text.primary',
+                    '& .MuiInputBase-input::placeholder': {
+                      opacity: 0.7,
+                    },
+                  }}
+                />
+              )}
             />
+            {errors.caption && (
+              <FormHelperText error>{errors.caption.message}</FormHelperText>
+            )}
           </Box>
 
-          {image && (
+          {imagePreview && (
             <Box
               sx={{
                 position: 'relative',
@@ -106,7 +171,7 @@ export function CreateFeedForm() {
             >
               <Box
                 component="img"
-                src={image}
+                src={imagePreview}
                 sx={{
                   width: '100%',
                   height: 'auto',
@@ -117,6 +182,7 @@ export function CreateFeedForm() {
               />
               <IconButton
                 onClick={handleRemoveImage}
+                disabled={isPending}
                 sx={{
                   position: 'absolute',
                   top: 8,
@@ -131,6 +197,9 @@ export function CreateFeedForm() {
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Box>
+          )}
+          {errors.file && !imagePreview && (
+            <FormHelperText error>{errors.file.message}</FormHelperText>
           )}
 
           <Divider sx={{ mb: 1.5, mx: 0 }} />
@@ -154,14 +223,40 @@ export function CreateFeedForm() {
                 <IconButton
                   color="primary"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={isPending}
                 >
                   <PhotoIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="GIF">
+                <IconButton color="primary" disabled>
+                  <GifIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Poll">
+                <IconButton color="primary" disabled>
+                  <PollIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Emoji">
+                <IconButton color="primary" disabled>
+                  <EmojiIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Schedule">
+                <IconButton color="primary" disabled>
+                  <ScheduleIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Location">
+                <IconButton color="primary" disabled>
+                  <LocationIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {caption.length > 0 && (
+              {charCount > 0 && (
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <CircularProgress
                     variant="determinate"
@@ -190,7 +285,7 @@ export function CreateFeedForm() {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={(!caption.trim() && !image) || isOverLimit}
+                disabled={!isValid || isPending}
                 sx={{
                   boxShadow: 'none',
                   py: 0.8,
@@ -204,7 +299,7 @@ export function CreateFeedForm() {
                   },
                 }}
               >
-                Post
+                {isPending ? 'Posting...' : 'Post'}
               </Button>
             </Box>
           </Box>
