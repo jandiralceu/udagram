@@ -55,6 +55,11 @@
       "prettier --write",
       "vitest related --run --config apps/udagram-api-feed/vitest.config.ts"
     ],
+    "apps/udagram-frontend/**/!(vitest.config|vite.config).{js,jsx,ts,tsx}": [
+      "eslint --fix --config apps/udagram-frontend/eslint.config.js",
+      "prettier --write",
+      "vitest related --run --config apps/udagram-frontend/vitest.config.ts"
+    ],
     "packages/pubsub/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix --config packages/pubsub/eslint.config.js",
       "prettier --write"
