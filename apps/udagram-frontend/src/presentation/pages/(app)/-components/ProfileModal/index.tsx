@@ -44,7 +44,11 @@ export function ProfileModal({ open, onClose }: Props) {
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={(_event, reason) => {
+        if (reason !== 'backdropClick' && reason !== 'escapeKeyDown') {
+          onClose()
+        }
+      }}
       fullWidth
       maxWidth="xs"
       disableRestoreFocus
