@@ -43,6 +43,8 @@ export const SignupResponseSchema = z.object({
 export const TokenResponseSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
+  accessTokenExpiry: z.number(),
+  refreshTokenExpiry: z.number(),
 })
 
 export type LoginDTO = z.infer<typeof LoginSchema>

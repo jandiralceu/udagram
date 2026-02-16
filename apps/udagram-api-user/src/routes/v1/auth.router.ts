@@ -72,4 +72,19 @@ export default async function authRoutes(
     },
     authController.refresh
   )
+
+  app.delete(
+    '/signout',
+    {
+      schema: {
+        description: 'Sign out user and invalidate refresh token',
+        tags: ['Auth'],
+        body: RefreshTokenSchema,
+        response: {
+          204: z.null(),
+        },
+      },
+    },
+    authController.signout
+  )
 }

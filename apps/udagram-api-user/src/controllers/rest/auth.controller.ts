@@ -9,11 +9,14 @@ import type {
   SignupDTO,
 } from '../../schemas/auth.schema.js'
 
+const DYNAMO_REFRESH_TABLE = 'RefreshTokens'
+
 export const signin = async (
   request: FastifyRequest<{ Body: LoginDTO }>,
   reply: FastifyReply
 ) => {
-  const TABLE_NAME = process.env.DYNAMO_TABLE_NAME || 'RefreshTokens'
+  const ACCESS_TOKEN_EXPIRY = 15 * 60 // 15 minutes in seconds
+  const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 // 7 days in seconds
 
   const { email, password } = request.body
 
@@ -39,7 +42,7 @@ export const signin = async (
     { sign: { expiresIn: '7d' } }
   )
 
-  await dynamoService.putItem(request.server.dynamo.doc, TABLE_NAME, {
+  await dynamoService.putItem(request.server.dynamo.doc, DYNAMO_REFRESH_TABLE, {
     refreshToken,
     userId: user.id,
     expiresAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
@@ -48,6 +51,8 @@ export const signin = async (
   return reply.send({
     accessToken,
     refreshToken,
+    accessTokenExpiry: ACCESS_TOKEN_EXPIRY,
+    refreshTokenExpiry: REFRESH_TOKEN_EXPIRY,
   })
 }
 
@@ -79,8 +84,8 @@ export const refresh = async (
   request: FastifyRequest<{ Body: RefreshTokenDTO }>,
   reply: FastifyReply
 ) => {
-  const TABLE_NAME = process.env.DYNAMO_TABLE_NAME || 'RefreshTokens'
-
+  const ACCESS_TOKEN_EXPIRY = 15 * 60 // 15 minutes in seconds
+  const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 // 7 days in seconds
   const { refreshToken } = request.body
 
   let payload: { sub: string }
@@ -96,7 +101,7 @@ export const refresh = async (
 
   const storedToken = await dynamoService.getItem(
     request.server.dynamo.doc,
-    TABLE_NAME,
+    DYNAMO_REFRESH_TABLE,
     { refreshToken }
   )
 
@@ -104,9 +109,13 @@ export const refresh = async (
     return reply.status(401).send({ message: 'Invalid refresh token' })
   }
 
-  await dynamoService.deleteItem(request.server.dynamo.doc, TABLE_NAME, {
-    refreshToken,
-  })
+  await dynamoService.deleteItem(
+    request.server.dynamo.doc,
+    DYNAMO_REFRESH_TABLE,
+    {
+      refreshToken,
+    }
+  )
 
   const newAccessToken = await reply.jwtSign(
     { sub: userId },
@@ -118,7 +127,7 @@ export const refresh = async (
     { sign: { expiresIn: '7d' } }
   )
 
-  await dynamoService.putItem(request.server.dynamo.doc, TABLE_NAME, {
+  await dynamoService.putItem(request.server.dynamo.doc, DYNAMO_REFRESH_TABLE, {
     refreshToken: newRefreshToken,
     userId,
     expiresAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
@@ -127,5 +136,24 @@ export const refresh = async (
   return reply.send({
     accessToken: newAccessToken,
     refreshToken: newRefreshToken,
+    accessTokenExpiry: ACCESS_TOKEN_EXPIRY,
+    refreshTokenExpiry: REFRESH_TOKEN_EXPIRY,
   })
+}
+
+export const signout = async (
+  request: FastifyRequest<{ Body: RefreshTokenDTO }>,
+  reply: FastifyReply
+) => {
+  const { refreshToken } = request.body
+
+  await dynamoService.deleteItem(
+    request.server.dynamo.doc,
+    DYNAMO_REFRESH_TABLE,
+    {
+      refreshToken,
+    }
+  )
+
+  return reply.status(204).send()
 }
