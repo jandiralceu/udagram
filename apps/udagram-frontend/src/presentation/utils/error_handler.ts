@@ -46,26 +46,39 @@ export const parseError = (error: unknown): AppError => {
 
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<ApiErrorResponse>
-    const status = axiosError.response?.status
-    const data = axiosError.response?.data
-    const code = data?.code
+    const response = axiosError.response
+    const status = response?.status
+    const data = response?.data
 
-    // 1. Try mapping the custom backend code
-    if (code && ERROR_MESSAGES[code]) {
-      return new AppError(ERROR_MESSAGES[code], code, status)
-    }
+    // 1. Extract the error code from common locations in the response body
+    const rawData = data as Record<string, unknown> | undefined
+    const code = data?.code || rawData?.errorCode || rawData?.error_code
 
-    // 2. Try mapping the status code
-    if (status && ERROR_MESSAGES[status]) {
+    // 2. HIGHEST PRIORITY: Map specific business error code if available
+    if (code && ERROR_MESSAGES[code.toString()]) {
       return new AppError(
-        ERROR_MESSAGES[status],
-        code ?? `HTTP_${status}`,
+        ERROR_MESSAGES[code.toString()],
+        code.toString(),
         status
       )
     }
-    // 3. Use the API message if available, otherwise fallback
+
+    // 3. SECOND PRIORITY: Map general HTTP status code
+    if (status && ERROR_MESSAGES[status]) {
+      return new AppError(
+        ERROR_MESSAGES[status],
+        code?.toString() ?? `HTTP_${status}`,
+        status
+      )
+    }
+
+    // 4. FALLBACK: Use API's raw message or Axios default message or generic fallback
     const message = data?.message || axiosError.message || FALLBACK_MESSAGE
-    return new AppError(message, code ?? `HTTP_${status || 'ERR'}`, status)
+    return new AppError(
+      message,
+      code?.toString() ?? `HTTP_${status || 'ERR'}`,
+      status
+    )
   }
 
   if (error instanceof Error) {
