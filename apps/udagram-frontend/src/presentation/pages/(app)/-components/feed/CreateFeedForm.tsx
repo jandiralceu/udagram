@@ -72,7 +72,7 @@ export function CreateFeedForm() {
     }
   }, [imagePreview])
 
-  const { mutateAsync, isPending } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateFeedRequest) => feedRepository.createFeed(data),
     onSuccess: () => {
       toast.success('Wait, that was cool! Your post is live.')
@@ -100,8 +100,8 @@ export function CreateFeedForm() {
     }
   }
 
-  const onSubmit = async (data: CreateFeedRequest) => {
-    await mutateAsync(data)
+  const onSubmit = (data: CreateFeedRequest) => {
+    mutate(data)
   }
 
   const charCount = caption.length

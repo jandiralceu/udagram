@@ -48,8 +48,8 @@ function RouteComponent() {
     },
   })
 
-  const { mutateAsync } = useMutation({
-    mutationFn: async (data: signupRequest) => signup(data),
+  const { mutate } = useMutation({
+    mutationFn: (data: signupRequest) => signup(data),
     onSuccess: () => {
       toast.success('User created successfully')
     },
@@ -59,9 +59,9 @@ function RouteComponent() {
     retry: false,
   })
 
-  const onSubmit: SubmitHandler<SignupForm> = async data => {
+  const onSubmit: SubmitHandler<SignupForm> = data => {
     const { termsAccepted: _unused, ...signupData } = data
-    await mutateAsync(signupData)
+    mutate(signupData)
   }
 
   return (

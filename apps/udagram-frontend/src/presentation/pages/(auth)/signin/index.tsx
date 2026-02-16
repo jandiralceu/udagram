@@ -41,16 +41,16 @@ function RouteComponent() {
     },
   })
 
-  const { mutateAsync } = useMutation({
-    mutationFn: async (data: signinRequest) => signin(data),
+  const { mutate } = useMutation({
+    mutationFn: (data: signinRequest) => signin(data),
     onError(_error) {
       toast.error('Error signing in')
     },
     retry: false,
   })
 
-  const onSubmit: SubmitHandler<signinRequest> = async data => {
-    await mutateAsync(data)
+  const onSubmit: SubmitHandler<signinRequest> = data => {
+    mutate(data)
   }
 
   useEffect(() => {
