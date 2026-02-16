@@ -86,9 +86,7 @@ export default async function usersRoutes(
         tags: ['Users'],
         security: [{ bearerAuth: [] }],
         consumes: ['multipart/form-data'],
-        body: z.object({
-          file: z.any().describe('Binary file data'),
-        }),
+        body: z.any().describe('Binary file data (multipart/form-data)'),
         response: {
           200: UserResponseSchema,
           400: z.object({

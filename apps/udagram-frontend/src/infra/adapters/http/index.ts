@@ -10,8 +10,7 @@ import type { AuthSessionModel } from '@data/models'
  * - baseURL: API base endpoint
  */
 const http = axios.create({
-  // baseURL: import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL,
-  baseURL: import.meta.env.BASE_API,
+  baseURL: import.meta.env.DEV ? '' : import.meta.env.VITE_API_URL,
 })
 
 /**
@@ -47,9 +46,9 @@ let failedQueue: Array<{
  * - /v1/auth/signin: Invalid credentials
  */
 const authEndpoints = new Set([
-  '/v1/auth/signin',
-  '/v1/auth/signup',
-  '/v1/auth/refresh',
+  '/api/v1/auth/signin',
+  // '/api/v1/auth/signup',
+  '/api/v1/auth/refresh',
 ])
 
 /**
@@ -107,13 +106,13 @@ const handleTokenRefresh = async (
   refreshToken: string
 ): Promise<AuthSessionModel> => {
   const response = await refreshClient.post<AuthSessionModel>(
-    '/v1/auth/refresh',
+    '/api/v1/auth/refresh',
     {
       refreshToken,
     }
   )
 
-  const newSession: AuthSessionModel = {
+  const newSession = {
     accessToken: response.data.accessToken,
     accessTokenExpiry: calculateExpiry(response.data.accessTokenExpiry),
     refreshToken: response.data.refreshToken,
