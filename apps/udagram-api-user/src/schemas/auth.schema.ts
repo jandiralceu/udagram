@@ -13,17 +13,11 @@ export const LoginSchema = z.object({
  * Requires email, password (min 8 chars), and name.
  * Validates that password matches confirmPassword.
  */
-export const SignupSchema = z
-  .object({
-    email: z.email(),
-    password: z.string().min(8, 'Password must be at least 8 characters long'),
-    confirmPassword: z.string().min(8),
-    name: z.string().min(2, 'Name is required'),
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  })
+export const SignupSchema = z.object({
+  email: z.email(),
+  password: z.string().min(8, 'Password must be at least 8 characters long'),
+  name: z.string().min(2, 'Name is required'),
+})
 
 /**
  * Schema for the response after successful signup.

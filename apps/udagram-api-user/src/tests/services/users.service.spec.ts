@@ -96,7 +96,6 @@ describe('Users Service', () => {
         email: mockUser.email,
         password,
         name: mockUser.name,
-        confirmPassword: password,
       }
 
       const result = await usersService.create(
