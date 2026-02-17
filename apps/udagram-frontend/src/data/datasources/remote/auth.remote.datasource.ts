@@ -1,6 +1,7 @@
 import type { AxiosInstance } from 'axios'
 
 import type { signinRequest, signupRequest } from '@domain/entities'
+
 import type { AuthSessionModel } from '../../models'
 
 export interface IAuthRemoteDataSource {

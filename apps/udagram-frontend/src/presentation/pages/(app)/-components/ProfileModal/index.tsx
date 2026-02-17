@@ -14,10 +14,11 @@ import Stack from '@mui/material/Stack'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useAuth } from '@presentation/hooks/useAuth'
 import { UserFactory } from '@factories/index'
-import { QueryKeys } from '@presentation/utils/constants'
-import { parseError } from '@presentation/utils/error_handler'
+
+import { useAuth } from '../../../../hooks/useAuth'
+import { QueryKeys } from '../../../../utils/constants'
+import { parseError } from '../../../../utils/error_handler'
 
 type Props = {
   open: boolean

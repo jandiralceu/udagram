@@ -13,7 +13,7 @@ export function Logo() {
         textDecoration: 'none',
         letterSpacing: '-1px',
         userSelect: 'none',
-        fontSize: '1.5rem',
+        fontSize: '1.25rem',
         '&:hover': {
           color: 'primary.main',
         },

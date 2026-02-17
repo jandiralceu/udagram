@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { faker } from '@faker-js/faker'
 import type { AxiosInstance } from 'axios'
+
 import { FeedRemoteDataSource } from './feed.remote.datasource'
 
 describe('FeedRemoteDataSource', () => {

@@ -1,3 +1,4 @@
+import log from 'loglevel'
 import type { IUserRepository } from '@domain/repositories'
 import type { User } from '@domain/entities'
 
@@ -21,7 +22,7 @@ export class UserRepository implements IUserRepository {
         createdAt: new Date(model.created_at),
       }
     } catch (error) {
-      console.error(error)
+      log.error('❌ Get profile failed:', error)
       throw error
     }
   }
@@ -30,7 +31,7 @@ export class UserRepository implements IUserRepository {
     try {
       await this.#remoteDataSource.updateAvatar(file)
     } catch (error) {
-      console.error(error)
+      log.error('❌ Update avatar failed:', error)
       throw error
     }
   }

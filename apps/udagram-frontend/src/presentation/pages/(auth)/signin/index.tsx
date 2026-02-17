@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
@@ -9,10 +10,10 @@ import { useForm, type SubmitHandler, Controller } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
 
 import type { signinRequest } from '@domain/entities'
-import { useAuth } from '@presentation/hooks/useAuth'
-import { TextInput } from '@presentation/components/widgets'
-import { useEffect } from 'react'
-import { parseError } from '@presentation/utils/error_handler'
+
+import { useAuth } from '../../../hooks/useAuth'
+import { Logo, TextInput } from '../../../components/widgets'
+import { parseError } from '../../../utils/error_handler'
 
 export const Route = createFileRoute('/(auth)/signin/')({
   component: RouteComponent,
@@ -63,7 +64,10 @@ function RouteComponent() {
   return (
     <Box component="main">
       <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography variant="h2">Welcome back</Typography>
+        <Logo />
+        <Typography variant="h2" sx={{ mt: 4 }}>
+          Welcome back
+        </Typography>
         <Typography variant="body1">Sign in to your account.</Typography>
       </Box>
 

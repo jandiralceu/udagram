@@ -1,6 +1,8 @@
+import log from 'loglevel'
+
+import { AuthStorage } from '@infra/cache/auth_storage'
 import type { IAuthRepository } from '@domain/repositories'
 import type { signinRequest, signupRequest } from '@domain/entities'
-import { AuthStorage } from '@infra/cache/auth_storage'
 
 import type { IAuthRemoteDataSource } from '../datasources'
 
@@ -24,7 +26,7 @@ export class AuthRepository implements IAuthRepository {
         refreshTokenExpiry: now + response.refreshTokenExpiry,
       })
     } catch (error) {
-      console.error(error)
+      log.error('❌ Signin failed:', error)
       throw error
     }
   }
@@ -33,7 +35,7 @@ export class AuthRepository implements IAuthRepository {
     try {
       await this.#remoteDataSource.signup(request)
     } catch (error) {
-      console.error(error)
+      log.error('❌ Signup failed:', error)
       throw error
     }
   }
@@ -45,7 +47,7 @@ export class AuthRepository implements IAuthRepository {
         await this.#remoteDataSource.signout(session.refreshToken)
       }
     } catch (error) {
-      console.error(error)
+      log.error('❌ Signout failed:', error)
     } finally {
       AuthStorage.clear()
     }

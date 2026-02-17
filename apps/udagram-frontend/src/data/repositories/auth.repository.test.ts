@@ -11,6 +11,12 @@ import { AuthRepository } from './auth.repository'
 import type { IAuthRemoteDataSource } from '../datasources'
 import { AuthStorage } from '@infra/cache/auth_storage'
 
+vi.mock('loglevel', () => ({
+  default: {
+    error: vi.fn(),
+  },
+}))
+
 describe('AuthRepository', () => {
   let repository: AuthRepository
   let mockDataSource: IAuthRemoteDataSource
@@ -36,7 +42,7 @@ describe('AuthRepository', () => {
       signout: vi.fn(),
     }
     repository = new AuthRepository(mockDataSource)
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.clearAllMocks()
   })
 
   afterEach(() => {

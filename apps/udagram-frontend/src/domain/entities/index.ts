@@ -1,5 +1,4 @@
 export * from './auth'
-export * from './enums'
 export * from './user'
 export * from './feed'
 export * from './errors'

@@ -1,7 +1,7 @@
 import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 
-import { theme } from '@presentation/theme'
+import { theme } from '../../theme'
 
 interface AppThemeProviderProps {
   children: React.ReactNode

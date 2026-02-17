@@ -1,5 +1,7 @@
 import type { AxiosInstance } from 'axios'
+
 import type { CreateFeedRequest } from '@domain/entities'
+
 import type { FeedModel } from '../../models'
 
 export interface IFeedRemoteDataSource {

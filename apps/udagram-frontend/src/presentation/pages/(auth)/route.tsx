@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+
 import signinSvg from '@images/signin.svg'
 
 export const Route = createFileRoute('/(auth)')({

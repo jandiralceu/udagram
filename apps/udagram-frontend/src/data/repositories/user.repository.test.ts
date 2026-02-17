@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { faker } from '@faker-js/faker'
+import log from 'loglevel'
 import { UserRepository } from './user.repository'
 import type { IUserRemoteDataSource } from '../datasources/remote'
+
+vi.mock('loglevel', () => ({
+  default: {
+    error: vi.fn(),
+  },
+}))
 
 describe('UserRepository', () => {
   let repository: UserRepository
@@ -19,9 +26,10 @@ describe('UserRepository', () => {
   beforeEach(() => {
     mockDataSource = {
       getProfile: vi.fn(),
+      updateAvatar: vi.fn(),
     }
     repository = new UserRepository(mockDataSource)
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.clearAllMocks()
   })
 
   it('getProfile calls datasource and maps to domain entity', async () => {
@@ -54,6 +62,6 @@ describe('UserRepository', () => {
     ;(mockDataSource.getProfile as Mock).mockRejectedValue(error)
 
     await expect(repository.getProfile()).rejects.toThrow(error)
-    expect(console.error).toHaveBeenCalledWith(error)
+    expect(log.error).toHaveBeenCalledWith('❌ Get profile failed:', error)
   })
 })

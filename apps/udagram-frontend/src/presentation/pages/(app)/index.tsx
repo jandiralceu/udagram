@@ -5,10 +5,11 @@ import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import { toast } from 'sonner'
 
-import { QueryKeys } from '@presentation/utils/constants'
-import { parseError } from '@presentation/utils/error_handler'
 import { FeedFactory } from '@factories/index'
-import { useAuth } from '@presentation/hooks/useAuth'
+
+import { QueryKeys } from '../../utils/constants'
+import { parseError } from '../../utils/error_handler'
+import { useAuth } from '../../hooks/useAuth'
 
 import Header from './-components/Menu'
 import {

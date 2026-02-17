@@ -1,4 +1,5 @@
 import { useContext, createContext } from 'react'
+
 import type { signinRequest, signupRequest, User } from '../../domain/entities'
 
 export type AuthState = {

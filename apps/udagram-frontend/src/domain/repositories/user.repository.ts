@@ -1,4 +1,4 @@
-import type { User } from '@domain/entities'
+import type { User } from '../entities/user'
 
 export interface IUserRepository {
   getProfile(): Promise<User>

@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
-import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import Avatar from '@mui/material/Avatar'
 import Tooltip from '@mui/material/Tooltip'
 import LogoutIcon from '@mui/icons-material/Logout'
-import { useAuth } from '@presentation/hooks/useAuth'
+
 import { ProfileModal } from '../ProfileModal'
+import { useAuth } from '../../../../hooks/useAuth'
+import { Logo } from '../../../../components/widgets'
 
 export default function Header() {
   const { signout, user } = useAuth()
@@ -36,18 +37,7 @@ export default function Header() {
               minHeight: '64px',
             }}
           >
-            <Typography
-              variant="h5"
-              component="div"
-              sx={{
-                fontWeight: 900,
-                color: 'primary.main',
-                letterSpacing: '-1px',
-                userSelect: 'none',
-              }}
-            >
-              Udagram
-            </Typography>
+            <Logo />
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Tooltip title="My Profile">

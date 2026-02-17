@@ -9,9 +9,10 @@ import { toast } from 'sonner'
 import { useMutation } from '@tanstack/react-query'
 
 import type { signupRequest } from '@domain/entities'
-import { useAuth } from '@presentation/hooks/useAuth'
-import { TextInput, TermsAcceptance } from '@presentation/components/widgets'
-import { parseError } from '@presentation/utils/error_handler'
+
+import { useAuth } from '../../../hooks/useAuth'
+import { TextInput, TermsAcceptance, Logo } from '../../../components/widgets'
+import { parseError } from '../../../utils/error_handler'
 
 export const Route = createFileRoute('/(auth)/signup/')({
   component: RouteComponent,
@@ -68,7 +69,10 @@ function RouteComponent() {
   return (
     <Box component="main">
       <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography variant="h2">Create an account</Typography>
+        <Logo />
+        <Typography variant="h2" sx={{ mt: 4 }}>
+          Create an account
+        </Typography>
         <Typography variant="body1">
           Join the community and share your photos with the world.
         </Typography>
