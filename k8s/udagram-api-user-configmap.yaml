@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: udagram-api-user-configmap
+  namespace: udagram
   labels:
     app: udagram
 data:
@@ -11,3 +12,5 @@ data:
   AWS_REGION: us-east-1
   AWS_BUCKET: jandir-nanodegree-udagram
   JWT_SECRET_NAME: prod/jwt/keys
+  API_KEYS_NAME: prod/api/keys
+  SNS_NAME: prod/sns/keys

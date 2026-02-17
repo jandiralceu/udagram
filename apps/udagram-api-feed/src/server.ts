@@ -22,6 +22,7 @@ import { getSecret, formatAsPem } from '@udagram/secrets-manager'
 import schema, { type EnvConfig } from './config/env.js'
 import feedRoutes from './routes/v1/feed.router.js'
 import { updateUserInfo } from './services/feeds.service.js'
+import { initUserClient } from './clients/user.client.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -38,6 +39,10 @@ declare module 'fastify' {
 
 interface JwtKeys {
   public: string
+}
+
+interface APIKeys {
+  feed_service: string
 }
 
 /**
@@ -86,6 +91,18 @@ export async function buildServer() {
   await fastify.register(fastifySwaggerUi, {
     routePrefix: '/docs',
   })
+
+  const apiKeys = await getSecret<APIKeys>(
+    fastify.config.API_KEYS_NAME,
+    fastify.config.AWS_REGION
+  )
+
+  if (!apiKeys.feed_service) {
+    throw new Error('Feed service API key not found')
+  }
+
+  fastify.config.USER_SERVICE_API_KEY = apiKeys.feed_service
+  initUserClient(fastify.config.USER_SERVICE, apiKeys.feed_service)
 
   // 2. JWT Verification Setup (Public Key only for Feed API)
   let jwtPublicKey: string

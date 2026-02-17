@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: udagram-api-user
+  name: udagram-api-feed
   namespace: udagram
   labels:
-    app: udagram-api-user
+    app: udagram-api-feed
 spec:
   selector:
-    app: udagram-api-user
+    app: udagram-api-feed
   ports:
     - name: http
       protocol: TCP

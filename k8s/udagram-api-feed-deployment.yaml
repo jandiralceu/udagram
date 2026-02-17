@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: udagram-api-user
+  name: udagram-api-feed
   namespace: udagram
   labels:
-    app: udagram-api-user
+    app: udagram-api-feed
 spec:
   replicas: 2
   strategy:
@@ -14,15 +14,15 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: udagram-api-user
+      app: udagram-api-feed
   template:
     metadata:
       labels:
-        app: udagram-api-user
+        app: udagram-api-feed
     spec:
       containers:
-        - name: udagram-api-user
-          image: jandir/udagram-api-user:latest
+        - name: udagram-api-feed
+          image: jandir/udagram-api-feed:latest
           ports:
             - containerPort: 8080
           resources:
@@ -46,6 +46,6 @@ spec:
             periodSeconds: 5
           envFrom:
             - configMapRef:
-                name: udagram-api-user-configmap
+                name: udagram-api-feed-configmap
             - secretRef:
-                name: udagram-api-user-secret
+                name: udagram-api-feed-secret
