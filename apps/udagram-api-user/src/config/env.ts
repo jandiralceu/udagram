@@ -11,7 +11,6 @@ const schema = {
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
     'AWS_BUCKET',
-    'GRPC_INTERNAL_TOKEN',
     'API_KEYS_NAME',
     'SNS_NAME',
   ],
@@ -26,7 +25,6 @@ const schema = {
     JWT_PUBLIC_KEY_FILE: { type: 'string' },
     JWT_PRIVATE_KEY_FILE: { type: 'string' },
     JWT_SECRET_NAME: { type: 'string' },
-    GRPC_INTERNAL_TOKEN: { type: 'string' },
     API_KEYS_NAME: { type: 'string' },
     SNS_NAME: { type: 'string' },
   },
@@ -47,9 +45,9 @@ export interface EnvConfig {
   JWT_PUBLIC_KEY_FILE?: string
   JWT_PRIVATE_KEY_FILE?: string
   JWT_SECRET_NAME?: string
-  GRPC_INTERNAL_TOKEN: string
   API_KEYS_NAME: string
   SNS_NAME: string
+  API_KEYS: string[]
 }
 
 export default schema

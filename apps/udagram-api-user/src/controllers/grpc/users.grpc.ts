@@ -1,16 +1,21 @@
-import 'dotenv/config'
 import { Code, ConnectError, type ConnectRouter } from '@connectrpc/connect'
 
 import { UserService } from '@udagram/user-grpc'
+
 import * as userService from '../../services/users.service.js'
+
+let allowedApiKeys: string[] = []
+
+export function initAPIKeys(keys: string[]) {
+  allowedApiKeys = keys
+}
 
 function validateInternalToken(context: {
   requestHeader: { get: (name: string) => string | null }
 }) {
-  const GRPC_INTERNAL_TOKEN = process.env.GRPC_INTERNAL_TOKEN
   const token = context.requestHeader.get('x-internal-token')
 
-  if (!GRPC_INTERNAL_TOKEN || token !== GRPC_INTERNAL_TOKEN) {
+  if (!token || !allowedApiKeys.includes(token)) {
     throw new ConnectError(
       'Unauthorized: invalid internal token',
       Code.Unauthenticated
