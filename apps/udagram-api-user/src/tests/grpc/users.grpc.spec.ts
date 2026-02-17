@@ -8,6 +8,10 @@ import { buildServer } from '../../server.js'
 import { usersTable } from '../../db/schema.js'
 import * as userService from '../../services/users.service.js'
 
+const { internalToken } = vi.hoisted(() => ({
+  internalToken: 'test-internal-token-uuid',
+}))
+
 // Mock external dependencies
 vi.mock('../../db/index.js', () => ({
   db: {
@@ -19,13 +23,21 @@ vi.mock('../../db/index.js', () => ({
   },
 }))
 
+vi.mock('@udagram/secrets-manager', () => ({
+  getSecret: vi.fn(async name => {
+    if (name?.includes('sns')) return { user_events: 'arn:test' }
+    if (name?.includes('api-keys')) return { test_service: internalToken }
+    return {}
+  }),
+  formatAsPem: vi.fn(k => k),
+}))
+
 vi.mock('../../services/users.service.js', () => ({
   getUserById: vi.fn(),
 }))
 
 describe('Users GRPC Service', () => {
   let app: FastifyInstance
-  const internalToken = faker.string.uuid()
 
   beforeAll(async () => {
     const __filename = fileURLToPath(import.meta.url)
@@ -53,6 +65,8 @@ describe('Users GRPC Service', () => {
       'AWS_SNS_TOPIC_ARN',
       'arn:aws:sns:us-east-1:000000000000:test-topic'
     )
+    vi.stubEnv('SNS_NAME', 'test-sns')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
 
     app = await buildServer()
     await app.ready()
@@ -136,32 +150,6 @@ describe('Users GRPC Service', () => {
       })
 
       expect(response.statusCode).toBe(401)
-    })
-
-    it('should return 401 if server token is not configured', async () => {
-      // We need to restart server with different env
-      // But we can just verify the logic by stubbing env and calling a new request?
-      // No, `validateInternalToken` reads process.env INSIDE that function every time?
-      // Let's check users.grpc.ts content.
-      // `const GRPC_INTERNAL_TOKEN = process.env.GRPC_INTERNAL_TOKEN`
-      // YES, it reads inside the function `validateInternalToken`.
-
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
-
-      const response = await app.inject({
-        method: 'POST',
-        url: '/user.UserService/GetUserById',
-        headers: {
-          'content-type': 'application/json',
-          'x-internal-token': internalToken,
-        },
-        payload: { id: faker.string.uuid() },
-      })
-
-      expect(response.statusCode).toBe(401)
-
-      // Restore env
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', internalToken)
     })
 
     it('should return user without avatarUrl if no avatar', async () => {

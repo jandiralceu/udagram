@@ -34,6 +34,15 @@ vi.mock('@udagram/fastify-dynamo-plugin', () => ({
   deleteItem: vi.fn(),
 }))
 
+vi.mock('@udagram/secrets-manager', () => ({
+  getSecret: vi.fn(async name => {
+    if (name?.includes('sns')) return { user_events: 'arn:test' }
+    if (name?.includes('api-keys')) return { feed_service: 'key-123' }
+    return {}
+  }),
+  formatAsPem: vi.fn(k => k),
+}))
+
 describe('Auth Routes', () => {
   let app: FastifyInstance
 
@@ -63,6 +72,8 @@ describe('Auth Routes', () => {
       'arn:aws:sns:us-east-1:000000000000:test-topic'
     )
     vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv('SNS_NAME', 'test-sns')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
 
     app = await buildServer()
     app.decorate('dynamo', {

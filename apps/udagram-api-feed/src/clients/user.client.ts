@@ -45,7 +45,9 @@ export const userClient = new Proxy({} as Client<typeof UserService>, {
 export function initUserClient(url: string, apiKey: string) {
   // Interceptor to add internal service authentication
   const authInterceptor: Interceptor = next => async req => {
-    req.header.set('x-internal-token', apiKey)
+    if (apiKey) {
+      req.header.set('x-internal-token', apiKey)
+    }
     return await next(req)
   }
 

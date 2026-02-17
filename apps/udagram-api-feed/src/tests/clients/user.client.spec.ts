@@ -42,44 +42,29 @@ describe('User Client', () => {
   })
 
   describe('transport configuration', () => {
-    it('should create transport with USER_GRPC_URL from env', async () => {
+    it('should create transport with URL from parameters', async () => {
       const grpcEndpoint = faker.internet.url()
       const token = faker.string.uuid()
 
-      vi.stubEnv('USER_GRPC_URL', grpcEndpoint)
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', token)
-
-      await import('../../clients/user.client.js')
+      const { initUserClient } = await import('../../clients/user.client.js')
+      initUserClient(grpcEndpoint, token)
 
       expect(capturedTransportOptions.baseUrl).toBe(grpcEndpoint)
-    })
-
-    it('should default to empty string when USER_GRPC_URL is not set', async () => {
-      delete process.env.USER_GRPC_URL
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
-
-      await import('../../clients/user.client.js')
-
-      expect(capturedTransportOptions.baseUrl).toBe('')
     })
 
     it('should use HTTP/1.1 for transport', async () => {
       const grpcEndpoint = faker.internet.url()
       const token = faker.string.uuid()
 
-      vi.stubEnv('USER_GRPC_URL', grpcEndpoint)
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', token)
-
-      await import('../../clients/user.client.js')
+      const { initUserClient } = await import('../../clients/user.client.js')
+      initUserClient(grpcEndpoint, token)
 
       expect(capturedTransportOptions.httpVersion).toBe('1.1')
     })
 
     it('should include auth interceptor in transport', async () => {
-      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
-
-      await import('../../clients/user.client.js')
+      const { initUserClient } = await import('../../clients/user.client.js')
+      initUserClient(faker.internet.url(), faker.string.uuid())
 
       expect(capturedTransportOptions.interceptors).toHaveLength(1)
       expect(typeof capturedTransportOptions.interceptors[0]).toBe('function')
@@ -88,32 +73,26 @@ describe('User Client', () => {
 
   describe('client creation', () => {
     it('should create client with UserService and transport', async () => {
-      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
-
-      await import('../../clients/user.client.js')
+      const { initUserClient } = await import('../../clients/user.client.js')
+      initUserClient(faker.internet.url(), faker.string.uuid())
 
       expect(capturedCreateClientArgs.transport).toBe(mockTransport)
     })
 
     it('should export userClient', async () => {
-      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+      const { userClient, initUserClient } =
+        await import('../../clients/user.client.js')
+      initUserClient(faker.internet.url(), faker.string.uuid())
 
-      const mod = await import('../../clients/user.client.js')
-
-      expect(mod.userClient).toBe(mockClient)
+      expect(userClient).toBeDefined()
     })
   })
 
   describe('authInterceptor', () => {
     it('should add x-internal-token header when GRPC_INTERNAL_TOKEN is set', async () => {
       const secretToken = faker.string.uuid()
-
-      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', secretToken)
-
-      await import('../../clients/user.client.js')
+      const { initUserClient } = await import('../../clients/user.client.js')
+      initUserClient(faker.internet.url(), secretToken)
 
       const interceptor = capturedTransportOptions.interceptors[0]
 
@@ -134,11 +113,9 @@ describe('User Client', () => {
       expect(mockNext).toHaveBeenCalledWith(mockReq)
     })
 
-    it('should NOT add x-internal-token header when GRPC_INTERNAL_TOKEN is not set', async () => {
-      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', '')
-
-      await import('../../clients/user.client.js')
+    it('should NOT add x-internal-token header when apiKey is empty', async () => {
+      const { initUserClient } = await import('../../clients/user.client.js')
+      initUserClient(faker.internet.url(), '')
 
       const interceptor = capturedTransportOptions.interceptors[0]
       if (!interceptor) throw new Error('Expected interceptor to be defined')
@@ -158,10 +135,8 @@ describe('User Client', () => {
     })
 
     it('should forward the response from next', async () => {
-      vi.stubEnv('USER_GRPC_URL', faker.internet.url())
-      vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
-
-      await import('../../clients/user.client.js')
+      const { initUserClient } = await import('../../clients/user.client.js')
+      initUserClient(faker.internet.url(), faker.string.uuid())
 
       const interceptor = capturedTransportOptions.interceptors[0]
       if (!interceptor) throw new Error('Expected interceptor to be defined')

@@ -14,7 +14,13 @@ vi.mock('@udagram/fastify-dynamo-plugin', () => ({
 }))
 
 vi.mock('@udagram/secrets-manager', () => ({
-  getSecret: vi.fn(),
+  getSecret: vi.fn(name => {
+    if (name?.includes('sns'))
+      return Promise.resolve({ user_events: 'arn:test' })
+    if (name?.includes('api-keys'))
+      return Promise.resolve({ feed_service: 'key-123' })
+    return Promise.resolve({})
+  }),
   formatAsPem: vi.fn(k => k),
 }))
 
@@ -44,6 +50,10 @@ describe('Server', () => {
       `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
     )
     vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv('SNS_NAME', 'test-sns')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
+    vi.stubEnv('SNS_NAME', 'test-sns')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
 
     const app = await buildServer()
     const response = await app.inject({
@@ -73,6 +83,8 @@ describe('Server', () => {
       `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
     )
     vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv('SNS_NAME', 'test-sns')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
 
     const app = await buildServer()
     await app.ready()
@@ -95,13 +107,27 @@ describe('Server', () => {
       `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
     )
     vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv('SNS_NAME', 'test-sns')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
 
-    vi.mocked(getSecret).mockResolvedValue({
-      private: fs.readFileSync(
-        path.join(__dirname, 'private_test.pem'),
-        'utf8'
-      ),
-      public: fs.readFileSync(path.join(__dirname, 'public_test.pem'), 'utf8'),
+    vi.mocked(getSecret).mockImplementation(name => {
+      if (name === secretName) {
+        return Promise.resolve({
+          private: fs.readFileSync(
+            path.join(__dirname, 'private_test.pem'),
+            'utf8'
+          ),
+          public: fs.readFileSync(
+            path.join(__dirname, 'public_test.pem'),
+            'utf8'
+          ),
+        })
+      }
+      if (name === 'test-sns')
+        return Promise.resolve({ user_events: 'arn:test' })
+      if (name === 'test-api-keys')
+        return Promise.resolve({ feed_service: 'key-123' })
+      return Promise.resolve({})
     })
 
     const app = await buildServer()
@@ -122,14 +148,25 @@ describe('Server', () => {
       `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
     )
     vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv('SNS_NAME', 'test-sns')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
     vi.stubEnv(
       'DB_CONNECTION_STRING',
       'postgresql://user:pass@localhost:5432/db'
     )
 
-    vi.mocked(getSecret).mockResolvedValue({
-      private: 'some-key',
-      // public key missing
+    vi.mocked(getSecret).mockImplementation(name => {
+      if (name === secretName) {
+        return Promise.resolve({
+          private: 'some-key',
+          // public key missing
+        })
+      }
+      if (name === 'test-sns')
+        return Promise.resolve({ user_events: 'arn:test' })
+      if (name === 'test-api-keys')
+        return Promise.resolve({ feed_service: 'key-123' })
+      return Promise.resolve({})
     })
 
     await expect(buildServer()).rejects.toThrow(
@@ -149,6 +186,8 @@ describe('Server', () => {
       `arn:aws:sns:${defaultRegion}:000000000000:test-topic`
     )
     vi.stubEnv('GRPC_INTERNAL_TOKEN', faker.string.uuid())
+    vi.stubEnv('SNS_NAME', 'test-sns')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
     vi.stubEnv(
       'DB_CONNECTION_STRING',
       'postgresql://user:pass@localhost:5432/db'
