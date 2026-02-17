@@ -1,9 +1,13 @@
 {
   "name": "@udagram/logger-config",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "ISC",
   "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
   "devDependencies": {
     "@types/node": "^25.0.10",
     "pino-pretty": "^13.1.3",
