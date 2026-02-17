@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 
 import { buildServer } from '../../server.js'
 import * as feedService from '../../services/feeds.service.js'
+import { ErrorCodes } from '../../lib/errors.js'
 
 // Mock external dependencies
 vi.mock('../../clients/s3.js', () => ({
@@ -183,7 +184,10 @@ describe('Feed Routes', () => {
       })
 
       expect(response.statusCode).toBe(404)
-      expect(response.json()).toEqual({ message: 'Feed not found' })
+      expect(response.json()).toEqual({
+        message: 'Feed not found',
+        code: ErrorCodes.FEED_NOT_FOUND,
+      })
     })
 
     it('should return 400 for invalid feedId (not a UUID)', async () => {
@@ -268,7 +272,10 @@ describe('Feed Routes', () => {
       })
 
       expect(response.statusCode).toBe(400)
-      expect(response.json()).toEqual({ message: 'File is required' })
+      expect(response.json()).toEqual({
+        message: 'File is required',
+        code: ErrorCodes.NO_FILE_UPLOADED,
+      })
     })
 
     it('should return 400 when caption is missing', async () => {
@@ -290,7 +297,10 @@ describe('Feed Routes', () => {
       })
 
       expect(response.statusCode).toBe(400)
-      expect(response.json()).toEqual({ message: 'Caption is required' })
+      expect(response.json()).toEqual({
+        message: 'Caption is required',
+        code: ErrorCodes.VALIDATION_ERROR,
+      })
     })
 
     it('should return 400 for invalid mimetype', async () => {
@@ -419,7 +429,10 @@ describe('Feed Routes', () => {
       })
 
       expect(response.statusCode).toBe(500)
-      expect(response.json()).toEqual({ message: 'Internal Server Error' })
+      expect(response.json()).toEqual({
+        message: 'Internal Server Error',
+        code: ErrorCodes.INTERNAL_ERROR,
+      })
     })
   })
 
