@@ -32,7 +32,10 @@ jobs:
         id: cache-node-modules
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
@@ -61,7 +64,10 @@ jobs:
         id: cache-node-modules
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
@@ -84,6 +90,11 @@ jobs:
           else
             echo "feed_exists=false" >> $GITHUB_OUTPUT
           fi
+          if [ -f apps/udagram-frontend/coverage/lcov.info ]; then
+            echo "frontend_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend_exists=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload API User Coverage
         if: steps.check_coverage.outputs.user_exists == 'true'
@@ -102,6 +113,17 @@ jobs:
         with:
           files: apps/udagram-api-feed/coverage/lcov.info
           flags: feed-service
+          disable_search: true
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: jandiralceu/udagram
+
+      - name: Upload Frontend Coverage
+        if: steps.check_coverage.outputs.frontend_exists == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          files: apps/udagram-frontend/coverage/lcov.info
+          flags: frontend
           disable_search: true
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -127,7 +149,10 @@ jobs:
         id: cache-node-modules
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies

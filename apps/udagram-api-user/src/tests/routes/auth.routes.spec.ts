@@ -97,7 +97,6 @@ describe('Auth Routes', () => {
       const payload = {
         email: mockUser.email,
         password,
-        confirmPassword: password,
         name: mockUser.name,
       }
 
@@ -126,7 +125,6 @@ describe('Auth Routes', () => {
       const payload = {
         email: faker.internet.email(),
         password,
-        confirmPassword: password,
         name: faker.person.fullName(),
       }
 
@@ -149,7 +147,6 @@ describe('Auth Routes', () => {
       const payload = {
         email: faker.internet.email(),
         password,
-        confirmPassword: password,
         name: faker.person.fullName(),
       }
 
