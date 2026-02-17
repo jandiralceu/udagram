@@ -1,7 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
+import InputAdornment from '@mui/material/InputAdornment'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import * as yup from 'yup'
@@ -28,6 +32,7 @@ const schema = yup.object().shape({
 }) as yup.ObjectSchema<signinRequest>
 
 function RouteComponent() {
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const searchParams = Route.useSearch()
   const { signin, isAuthenticating, isAuthenticated } = useAuth()
@@ -80,6 +85,7 @@ function RouteComponent() {
               <TextInput
                 {...field}
                 label="Email"
+                placeholder="Enter your email"
                 error={errors.email?.message}
               />
             )}
@@ -90,9 +96,26 @@ function RouteComponent() {
             render={({ field }) => (
               <TextInput
                 {...field}
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 label="Password"
+                placeholder="Enter your password"
                 error={errors.password?.message}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                }
               />
             )}
           />
@@ -107,9 +130,28 @@ function RouteComponent() {
             Sign In
           </Button>
         </Box>
-        <Box sx={{ mt: 2, textAlign: 'center' }}>
-          <Typography variant="body1" sx={{ fontSize: '0.7rem' }}>
-            Don't have an account?{' '}
+        <Box sx={{ mt: 3, textAlign: 'center' }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.5,
+              '& a': {
+                color: 'primary.main',
+                textDecoration: 'none',
+                fontWeight: 600,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  textDecoration: 'underline',
+                  opacity: 0.8,
+                },
+              },
+            }}
+          >
+            Don't have an account?
             <Link to="/signup" search={{ redirect: undefined }}>
               Sign up
             </Link>

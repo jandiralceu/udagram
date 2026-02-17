@@ -1,6 +1,11 @@
+import { useState } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
+import InputAdornment from '@mui/material/InputAdornment'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -35,6 +40,7 @@ const schema = yup.object().shape({
 }) as yup.ObjectSchema<SignupForm>
 
 function RouteComponent() {
+  const [showPassword, setShowPassword] = useState(false)
   const { signup } = useAuth()
   const {
     handleSubmit,
@@ -84,7 +90,12 @@ function RouteComponent() {
             control={control}
             name="name"
             render={({ field }) => (
-              <TextInput {...field} label="Name" error={errors.name?.message} />
+              <TextInput
+                {...field}
+                label="Name"
+                placeholder="e.g. John Doe"
+                error={errors.name?.message}
+              />
             )}
           />
           <Controller
@@ -94,6 +105,7 @@ function RouteComponent() {
               <TextInput
                 {...field}
                 label="Email"
+                placeholder="e.g. john@example.com"
                 error={errors.email?.message}
               />
             )}
@@ -104,9 +116,26 @@ function RouteComponent() {
             render={({ field }) => (
               <TextInput
                 {...field}
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 label="Password"
+                placeholder="Min. 8 characters"
                 error={errors.password?.message}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                }
               />
             )}
           />
@@ -131,9 +160,28 @@ function RouteComponent() {
             Create Account
           </Button>
         </Box>
-        <Box sx={{ mt: 2, textAlign: 'center' }}>
-          <Typography variant="body1" sx={{ fontSize: '0.7rem' }}>
-            Already have an account?{' '}
+        <Box sx={{ mt: 3, textAlign: 'center' }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.5,
+              '& a': {
+                color: 'primary.main',
+                textDecoration: 'none',
+                fontWeight: 600,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  textDecoration: 'underline',
+                  opacity: 0.8,
+                },
+              },
+            }}
+          >
+            Already have an account?
             <Link to="/signin" search={{ redirect: undefined }}>
               Sign in
             </Link>
