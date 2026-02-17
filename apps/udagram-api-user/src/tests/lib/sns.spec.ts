@@ -25,26 +25,24 @@ describe('SNS Lib', () => {
   })
 
   it('should publish event if topic ARN is defined', async () => {
-    process.env.AWS_SNS_TOPIC_ARN =
-      'arn:aws:sns:us-east-1:123456789012:UserEvents'
+    const topicArn = 'arn:aws:sns:us-east-1:123456789012:UserEvents'
     mockPublish.mockResolvedValue({ MessageId: '123' })
 
-    const { publishUserEvent } = await import('../../lib/sns.js')
+    const { publishUserEvent, initSNS } = await import('../../lib/sns.js')
+    initSNS(topicArn)
 
     const result = await publishUserEvent('UserUpdated', { id: '1' })
 
     expect(result).toBeDefined()
-    expect(mockPublish).toHaveBeenCalledWith(
-      'arn:aws:sns:us-east-1:123456789012:UserEvents',
-      'UserUpdated',
-      { id: '1' }
-    )
+    expect(mockPublish).toHaveBeenCalledWith(topicArn, 'UserUpdated', {
+      id: '1',
+    })
   })
 
   it('should skip publish if topic ARN is missing', async () => {
-    delete process.env.AWS_SNS_TOPIC_ARN
-
-    const { publishUserEvent } = await import('../../lib/sns.js')
+    const { publishUserEvent, initSNS } = await import('../../lib/sns.js')
+    // Ensure it's not initialized
+    initSNS('')
 
     const result = await publishUserEvent('UserUpdated', { id: '1' })
 
@@ -53,11 +51,11 @@ describe('SNS Lib', () => {
   })
 
   it('should handle publish errors gratefully', async () => {
-    process.env.AWS_SNS_TOPIC_ARN =
-      'arn:aws:sns:us-east-1:123456789012:UserEvents'
+    const topicArn = 'arn:aws:sns:us-east-1:123456789012:UserEvents'
     mockPublish.mockRejectedValue(new Error('SNS Error'))
 
-    const { publishUserEvent } = await import('../../lib/sns.js')
+    const { publishUserEvent, initSNS } = await import('../../lib/sns.js')
+    initSNS(topicArn)
 
     const result = await publishUserEvent('UserUpdated', { id: '1' })
 

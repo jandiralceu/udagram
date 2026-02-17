@@ -22,6 +22,7 @@ vi.mock('../../clients/user.client.js', () => ({
   userClient: {
     getUserById: vi.fn(),
   },
+  initUserClient: vi.fn(),
 }))
 
 vi.mock('../../db/index.js', () => ({
@@ -34,6 +35,15 @@ vi.mock('../../services/feeds.service.js', () => ({
   create: vi.fn(),
   deleteFeed: vi.fn(),
   updateUserInfo: vi.fn(),
+}))
+
+vi.mock('@udagram/secrets-manager', () => ({
+  getSecret: vi.fn(async name => {
+    if (name?.includes('sns')) return { user_events: 'arn:test' }
+    if (name?.includes('api-keys')) return { feed_service: 'key-123' }
+    return { public: 'test-public-key' }
+  }),
+  formatAsPem: vi.fn(k => k),
 }))
 
 function mockFeed(overrides: Record<string, unknown> = {}) {
@@ -65,6 +75,7 @@ describe('Feed Routes', () => {
       path.join(__dirname, '../public_test.pem')
     )
     vi.stubEnv('JWT_SECRET_NAME', '')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
     vi.stubEnv('AWS_REGION', 'us-east-1')
     vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
     vi.stubEnv('AWS_SECRET_ACCESS_KEY', faker.string.uuid())

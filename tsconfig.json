@@ -10,6 +10,8 @@
     "forceConsistentCasingInFileNames": true,
     "moduleDetection": "force",
     "isolatedModules": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "declaration": true,
+    "declarationMap": true
   }
 }

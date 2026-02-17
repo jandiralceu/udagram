@@ -22,9 +22,10 @@ import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
 import { getSecret, formatAsPem } from '@udagram/secrets-manager'
 
 import schema, { type EnvConfig } from './config/env.js'
+import { initSNS } from './lib/sns.js'
 import authRoutes from './routes/v1/auth.router.js'
 import usersRoutes from './routes/v1/users.router.js'
-import grpcRoutes from './controllers/grpc/users.grpc.js'
+import grpcRoutes, { initAPIKeys } from './controllers/grpc/users.grpc.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -42,6 +43,14 @@ declare module 'fastify' {
 interface JwtKeys {
   private: string
   public: string
+}
+
+interface SNSKeys {
+  user_events: string
+}
+
+interface APIKeys {
+  feed_service: string
 }
 
 /**
@@ -88,6 +97,31 @@ export async function buildServer() {
   await fastify.register(fastifySwaggerUi, {
     routePrefix: '/docs',
   })
+
+  // 1.1 Fetch SNS Topic ARN from AWS Secrets Manager
+  const snsKeys = await getSecret<SNSKeys>(
+    fastify.config.SNS_NAME,
+    fastify.config.AWS_REGION
+  )
+  if (!snsKeys.user_events) {
+    throw new Error('SNS_NAME secret must contain a user_events ARN')
+  }
+  fastify.config.AWS_SNS_TOPIC_ARN = snsKeys.user_events
+  initSNS(snsKeys.user_events)
+
+  // 1.2 Fetch API Keys from AWS Secrets Manager
+  const apiKeys = await getSecret<APIKeys>(
+    fastify.config.API_KEYS_NAME,
+    fastify.config.AWS_REGION
+  )
+  const apiKeysList = Object.values(apiKeys)
+  if (apiKeysList.length === 0) {
+    throw new Error(
+      `Secret ${fastify.config.API_KEYS_NAME} must contain at least one API key`
+    )
+  }
+  fastify.config.API_KEYS = apiKeysList
+  initAPIKeys(apiKeysList)
 
   // 2. JWT & Security Setup
   let jwtKeys: JwtKeys

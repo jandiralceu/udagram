@@ -40,10 +40,12 @@ describe('Feed API Server', () => {
     const __filename = fileURLToPath(import.meta.url)
     const __dirname = path.dirname(__filename)
 
-    vi.mocked(getSecret).mockResolvedValue({
-      public: 'test-public-aws',
+    vi.mocked(getSecret).mockImplementation(async name => {
+      if (name?.includes('api-keys')) return { feed_service: 'key-123' }
+      return { public: 'test-public-aws' }
     })
     vi.stubEnv('JWT_SECRET_NAME', '')
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
     vi.stubEnv('JWT_PUBLIC_KEY_FILE', path.join(__dirname, 'public_test.pem'))
     vi.stubEnv('AWS_REGION', 'us-east-1')
     vi.stubEnv('AWS_ACCESS_KEY_ID', faker.string.uuid())
@@ -90,8 +92,10 @@ describe('Feed API Server', () => {
 
   it('should start with keys from AWS Secrets Manager', async () => {
     vi.stubEnv('JWT_SECRET_NAME', 'test-secret')
-    vi.mocked(getSecret).mockResolvedValue({
-      public: 'test-public-aws',
+    vi.stubEnv('API_KEYS_NAME', 'test-api-keys')
+    vi.mocked(getSecret).mockImplementation(async name => {
+      if (name?.includes('api-keys')) return { feed_service: 'key-123' }
+      return { public: 'test-public-aws' }
     })
 
     const { fastify: app } = await buildServer()

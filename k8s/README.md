@@ -1,77 +1,89 @@
-# Kubernetes Configuration
+# Udagram Infrastructure - Kubernetes
 
-This directory contains the Kubernetes configuration files for the Udagram application.
+This directory centralizes the Kubernetes (K8s) infrastructure orchestration for the Udagram application. The architecture follows cloud-native principles, ensuring scalability, resilience, and strict separation of concerns across microservices.
 
-## Services
+## 🏗️ Deployment Architecture
 
-- `udagram-api-feed-service.yaml`: Service for the feed API.
-- `udagram-api-user-service.yaml`: Service for the user API.
-- `udagram-frontend-service.yaml`: Service for the frontend.
-- `udagram-reverseproxy-service.yaml`: Service for the reverse proxy.
+The infrastructure is designed using modular components within the `udagram` namespace for isolation.
 
-## Deployments
+### Service Inventory
 
-- `udagram-api-feed-deployment.yaml`: Deployment for the feed API.
-- `udagram-api-user-deployment.yaml`: Deployment for the user API.
-- `udagram-frontend-deployment.yaml`: Deployment for the frontend.
-- `udagram-reverseproxy-deployment.yaml`: Deployment for the reverse proxy.
+| Component     | Manifests                 | Description                                        |
+| :------------ | :------------------------ | :------------------------------------------------- |
+| **Namespace** | `udagram-namespace.yaml`  | Dedicated resource isolation.                      |
+| **User API**  | `udagram-api-user-*.yaml` | Handles authentication and profiles.               |
+| **Feed API**  | `udagram-api-feed-*.yaml` | Core logic for feed management and media handling. |
 
-## Ingress
+### Microservices Specification
 
-- `udagram-ingress.yaml`: Ingress configuration for the application.
+| Service      | Deployment Strategy | Auto-scaling     | Internal DNS                                 |
+| :----------- | :------------------ | :--------------- | :------------------------------------------- |
+| **User API** | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-api-user.udagram.svc.cluster.local` |
+| **Feed API** | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-api-feed.udagram.svc.cluster.local` |
 
-## Secrets
+## 🔐 Secrets Management (Security Best Practices)
 
-- `udagram-secrets.yaml`: Secrets for the application.
+In alignment with **DevSecOps** principles, credentials are provisioned manually via CLI to prevent sensitive data from being stored in version control.
 
-## ConfigMaps
+### Provisioning Credentials
 
-- `udagram-configmaps.yaml`: ConfigMaps for the application.
-
-## Storage
-
-- `udagram-storage.yaml`: Storage configuration for the application.
-
-## Namespaces
-
-- `udagram-namespace.yaml`: Namespace for the application.
-
-## Installation
+Execute the following commands to provision secrets for both services:
 
 ```bash
-# Create namespace first
+# User API Secrets
+kubectl create secret generic udagram-api-user-secret \
+  --namespace udagram \
+  --from-literal=DB_CONNECTION_STRING='<USER_DB_URL>' \
+  --from-literal=AWS_ACCESS_KEY_ID='<AWS_KEY>' \
+  --from-literal=AWS_SECRET_ACCESS_KEY='<AWS_SECRET>'
+
+# Feed API Secrets
+kubectl create secret generic udagram-api-feed-secret \
+  --namespace udagram \
+  --from-literal=DB_CONNECTION_STRING='<FEED_DB_URL>' \
+  --from-literal=AWS_ACCESS_KEY_ID='<AWS_KEY>' \
+  --from-literal=AWS_SECRET_ACCESS_KEY='<AWS_SECRET>'
+```
+
+## 🚀 Deployment Guide
+
+### 1. Initialize Infrastructure
+
+```bash
 kubectl apply -f udagram-namespace.yaml
 ```
 
-```bash
-# Apply all other resources
-kubectl apply \
-  -f udagram-secrets.yaml \
-  -f udagram-configmaps.yaml \
-  -f udagram-storage.yaml \
-  -f udagram-api-feed-deployment.yaml \
-  -f udagram-api-user-deployment.yaml \
-  -f udagram-frontend-deployment.yaml \
-  -f udagram-reverseproxy-deployment.yaml \
-  -f udagram-ingress.yaml
-```
-
-## Uninstallation
+### 2. Configure Environment
 
 ```bash
-# Delete all resources except namespace
-kubectl delete \
-  -f udagram-ingress.yaml \
-  -f udagram-reverseproxy-deployment.yaml \
-  -f udagram-frontend-deployment.yaml \
-  -f udagram-api-user-deployment.yaml \
-  -f udagram-api-feed-deployment.yaml \
-  -f udagram-storage.yaml \
-  -f udagram-configmaps.yaml \
-  -f udagram-secrets.yaml
+kubectl apply -f udagram-api-user-configmap.yaml
+kubectl apply -f udagram-api-feed-configmap.yaml
 ```
 
+### 3. Deploy and Scale Services
+
 ```bash
-# Delete namespace last
-kubectl delete -f udagram-namespace.yaml
+# User Service
+kubectl apply -f udagram-api-user-service.yaml
+kubectl apply -f udagram-api-user-deployment.yaml
+kubectl apply -f udagram-api-user-hpa.yaml
+
+# Feed Service
+kubectl apply -f udagram-api-feed-service.yaml
+kubectl apply -f udagram-api-feed-deployment.yaml
+kubectl apply -f udagram-api-feed-hpa.yaml
 ```
+
+### 4. Monitoring & Verification
+
+```bash
+# Verify deployments and HPA
+kubectl get all -n udagram
+
+# Monitor scaling events
+kubectl get hpa -w -n udagram
+```
+
+---
+
+_Note: This architecture demonstrates proficiency in multi-service microservice orchestration, service discovery, and elastic scaling in Kubernetes._

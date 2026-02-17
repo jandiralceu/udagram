@@ -4,10 +4,10 @@ import { PubSubClient, type PubSubEventType } from '@udagram/pubsub'
 // Initialize the PubSub client
 const pubSubClient = new PubSubClient(process.env.AWS_REGION)
 
-const topicArn = process.env.AWS_SNS_TOPIC_ARN
+let topicArn: string
 
-if (!topicArn) {
-  console.warn('AWS_SNS_TOPIC_ARN is not defined. SNS notifications will fail.')
+export const initSNS = (arn: string) => {
+  topicArn = arn
 }
 
 export const publishUserEvent = async (
@@ -15,7 +15,7 @@ export const publishUserEvent = async (
   payload: Record<string, unknown>
 ) => {
   if (!topicArn) {
-    console.warn('Skipping SNS publish because AWS_SNS_TOPIC_ARN is missing.')
+    console.warn('SNS not initialized. Call initSNS() first.')
     return undefined
   }
 
