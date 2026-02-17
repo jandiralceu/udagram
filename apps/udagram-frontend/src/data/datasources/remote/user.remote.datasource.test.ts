@@ -19,6 +19,7 @@ describe('UserRemoteDataSource', () => {
   beforeEach(() => {
     mockHttpClient = {
       get: vi.fn(),
+      post: vi.fn(),
     }
     dataSource = new UserRemoteDataSource(mockHttpClient as AxiosInstance)
   })
@@ -29,6 +30,24 @@ describe('UserRemoteDataSource', () => {
     const result = await dataSource.getProfile()
 
     expect(mockHttpClient.get).toHaveBeenCalledWith('/api/v1/users/me')
+    expect(result).toEqual(mockUserResponse)
+  })
+
+  it('updateAvatar calls post with correct url, formData and headers', async () => {
+    ;(mockHttpClient.post as Mock).mockResolvedValue({ data: mockUserResponse })
+    const file = new File([''], 'avatar.jpg', { type: 'image/jpeg' })
+
+    const result = await dataSource.updateAvatar(file)
+
+    expect(mockHttpClient.post).toHaveBeenCalledWith(
+      '/api/v1/users/avatar',
+      expect.any(FormData),
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
     expect(result).toEqual(mockUserResponse)
   })
 })

@@ -87,4 +87,50 @@ describe('AuthRepository', () => {
     expect(mockDataSource.signout).toHaveBeenCalledWith(refreshToken)
     expect(clearSpy).toHaveBeenCalled()
   })
+
+  it('signin rethrows and logs error', async () => {
+    const request = { email: 'test@example.com', password: 'password123' }
+    const error = new Error('Signin Error')
+    ;(mockDataSource.signin as Mock).mockRejectedValue(error)
+    vi.spyOn(console, 'error').mockImplementation(() => {}) // though we mock loglevel
+
+    await expect(repository.signin(request)).rejects.toThrow(error)
+  })
+
+  it('signup rethrows and logs error', async () => {
+    const request = {
+      name: 'Test Name',
+      email: 'test@example.com',
+      password: 'password123',
+    }
+    const error = new Error('Signup Error')
+    ;(mockDataSource.signup as Mock).mockRejectedValue(error)
+
+    await expect(repository.signup(request)).rejects.toThrow(error)
+  })
+
+  it('signout logs error but clears storage', async () => {
+    const refreshToken = 'refresh-token'
+    vi.spyOn(AuthStorage, 'get').mockReturnValue({
+      ...mockAuthResponse,
+      refreshToken,
+    })
+    const error = new Error('Signout Error')
+    ;(mockDataSource.signout as Mock).mockRejectedValue(error)
+    const clearSpy = vi.spyOn(AuthStorage, 'clear').mockImplementation(() => {})
+
+    await repository.signout()
+
+    expect(clearSpy).toHaveBeenCalled()
+  })
+
+  it('signout skips remote call if no refresh token exists', async () => {
+    vi.spyOn(AuthStorage, 'get').mockReturnValue(null)
+    const clearSpy = vi.spyOn(AuthStorage, 'clear').mockImplementation(() => {})
+
+    await repository.signout()
+
+    expect(mockDataSource.signout).not.toHaveBeenCalled()
+    expect(clearSpy).toHaveBeenCalled()
+  })
 })

@@ -1,9 +1,17 @@
+import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react-swc'
-import path from 'node:path'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+      routesDirectory: './src/presentation/pages',
+    }),
+    react(),
+  ],
   test: {
     environment: 'jsdom',
     globals: true,
@@ -28,10 +36,10 @@ export default defineConfig({
         '**/dist/**',
       ],
       thresholds: {
-        lines: 5,
-        functions: 5,
-        branches: 5,
-        statements: 5,
+        lines: 70,
+        functions: 70,
+        branches: 70,
+        statements: 70,
       },
     },
   },

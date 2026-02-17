@@ -64,4 +64,24 @@ describe('UserRepository', () => {
     await expect(repository.getProfile()).rejects.toThrow(error)
     expect(log.error).toHaveBeenCalledWith('❌ Get profile failed:', error)
   })
+
+  it('updateAvatar calls datasource', async () => {
+    const file = new File([''], 'avatar.jpg', { type: 'image/jpeg' })
+    ;(mockDataSource.updateAvatar as Mock).mockResolvedValue({
+      ...createMockUserModel(),
+    })
+
+    await repository.updateAvatar(file)
+
+    expect(mockDataSource.updateAvatar).toHaveBeenCalledWith(file)
+  })
+
+  it('updateAvatar rethrows and logs error', async () => {
+    const file = new File([''], 'avatar.jpg', { type: 'image/jpeg' })
+    const error = new Error('Upload Error')
+    ;(mockDataSource.updateAvatar as Mock).mockRejectedValue(error)
+
+    await expect(repository.updateAvatar(file)).rejects.toThrow(error)
+    expect(log.error).toHaveBeenCalledWith('❌ Update avatar failed:', error)
+  })
 })
