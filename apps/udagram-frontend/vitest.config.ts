@@ -8,6 +8,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: [path.resolve(__dirname, './src/test-setup.ts')],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     alias: {
       '@images': path.resolve(__dirname, './src/presentation/assets/images'),
       '@domain': path.resolve(__dirname, './src/domain'),
@@ -16,6 +17,22 @@ export default defineConfig({
       '@data': path.resolve(__dirname, './src/data'),
       '@application': path.resolve(__dirname, './src/application'),
       '@factories': path.resolve(__dirname, './src/factories'),
+    },
+    exclude: ['**/node_modules/**', '**/dist/**', 'src/presentation/assets/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      exclude: [
+        'src/presentation/assets/**',
+        '**/node_modules/**',
+        '**/dist/**',
+      ],
+      thresholds: {
+        lines: 5,
+        functions: 5,
+        branches: 5,
+        statements: 5,
+      },
     },
   },
 })

@@ -11,14 +11,13 @@ import type {
 } from '../../schemas/auth.schema.js'
 
 const DYNAMO_REFRESH_TABLE = 'RefreshTokens'
+const ACCESS_TOKEN_EXPIRY = 15 * 60 // 15 minutes in seconds
+const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 // 7 days in seconds
 
 export const signin = async (
   request: FastifyRequest<{ Body: LoginDTO }>,
   reply: FastifyReply
 ) => {
-  const ACCESS_TOKEN_EXPIRY = 15 * 60 // 15 minutes in seconds
-  const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 // 7 days in seconds
-
   const { email, password } = request.body
 
   const user = await usersService.getUserByEmail(email)
@@ -41,18 +40,18 @@ export const signin = async (
 
   const accessToken = await reply.jwtSign(
     { sub: user.id },
-    { sign: { expiresIn: '15m' } }
+    { sign: { expiresIn: ACCESS_TOKEN_EXPIRY } }
   )
 
   const refreshToken = await reply.jwtSign(
     { sub: user.id },
-    { sign: { expiresIn: '7d' } }
+    { sign: { expiresIn: REFRESH_TOKEN_EXPIRY } }
   )
 
   await dynamoService.putItem(request.server.dynamo.doc, DYNAMO_REFRESH_TABLE, {
     refreshToken,
     userId: user.id,
-    expiresAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    expiresAt: Math.floor(Date.now() / 1000) + REFRESH_TOKEN_EXPIRY,
   })
 
   return reply.send({
@@ -94,8 +93,6 @@ export const refresh = async (
   request: FastifyRequest<{ Body: RefreshTokenDTO }>,
   reply: FastifyReply
 ) => {
-  const ACCESS_TOKEN_EXPIRY = 15 * 60 // 15 minutes in seconds
-  const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 // 7 days in seconds
   const { refreshToken } = request.body
 
   let payload: { sub: string }
@@ -135,18 +132,18 @@ export const refresh = async (
 
   const newAccessToken = await reply.jwtSign(
     { sub: userId },
-    { sign: { expiresIn: '15m' } }
+    { sign: { expiresIn: ACCESS_TOKEN_EXPIRY } }
   )
 
   const newRefreshToken = await reply.jwtSign(
     { sub: userId },
-    { sign: { expiresIn: '7d' } }
+    { sign: { expiresIn: REFRESH_TOKEN_EXPIRY } }
   )
 
   await dynamoService.putItem(request.server.dynamo.doc, DYNAMO_REFRESH_TABLE, {
     refreshToken: newRefreshToken,
     userId,
-    expiresAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    expiresAt: Math.floor(Date.now() / 1000) + REFRESH_TOKEN_EXPIRY,
   })
 
   return reply.send({

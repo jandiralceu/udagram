@@ -94,6 +94,7 @@ function RouteComponent() {
                 {...field}
                 label="Name"
                 placeholder="e.g. John Doe"
+                disabled={isSubmitting}
                 error={errors.name?.message}
               />
             )}
@@ -106,6 +107,7 @@ function RouteComponent() {
                 {...field}
                 label="Email"
                 placeholder="e.g. john@example.com"
+                disabled={isSubmitting}
                 error={errors.email?.message}
               />
             )}
@@ -119,6 +121,7 @@ function RouteComponent() {
                 type={showPassword ? 'text' : 'password'}
                 label="Password"
                 placeholder="Min. 8 characters"
+                disabled={isSubmitting}
                 error={errors.password?.message}
                 endAdornment={
                   <InputAdornment position="end">
@@ -127,6 +130,7 @@ function RouteComponent() {
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
                       size="small"
+                      disabled={isSubmitting}
                     >
                       {showPassword ? (
                         <VisibilityOff fontSize="small" />
@@ -148,6 +152,7 @@ function RouteComponent() {
                 onChange={field.onChange}
                 label="I accept the terms and conditions"
                 error={errors.termsAccepted?.message}
+                disabled={isSubmitting}
               />
             )}
           />
@@ -156,6 +161,7 @@ function RouteComponent() {
             variant="contained"
             disabled={isSubmitting}
             sx={{ width: '100%' }}
+            loading={isSubmitting}
           >
             Create Account
           </Button>

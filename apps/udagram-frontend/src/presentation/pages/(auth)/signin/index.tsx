@@ -87,6 +87,7 @@ function RouteComponent() {
                 label="Email"
                 placeholder="Enter your email"
                 error={errors.email?.message}
+                disabled={isSubmitting}
               />
             )}
           />
@@ -100,6 +101,7 @@ function RouteComponent() {
                 label="Password"
                 placeholder="Enter your password"
                 error={errors.password?.message}
+                disabled={isSubmitting}
                 endAdornment={
                   <InputAdornment position="end">
                     <IconButton
@@ -125,7 +127,7 @@ function RouteComponent() {
             variant="contained"
             disabled={isSubmitting}
             sx={{ width: '100%' }}
-            loading={isAuthenticating}
+            loading={isAuthenticating || isSubmitting}
           >
             Sign In
           </Button>
