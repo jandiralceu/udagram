@@ -22,6 +22,7 @@ import dynamoPlugin from '@udagram/fastify-dynamo-plugin'
 import { getSecret, formatAsPem } from '@udagram/secrets-manager'
 
 import schema, { type EnvConfig } from './config/env.js'
+import { initSNS } from './lib/sns.js'
 import authRoutes from './routes/v1/auth.router.js'
 import usersRoutes from './routes/v1/users.router.js'
 import grpcRoutes from './controllers/grpc/users.grpc.js'
@@ -44,6 +45,10 @@ interface JwtKeys {
   public: string
 }
 
+interface SNSKeys {
+  user_events: string
+}
+
 /**
  * Builds the Fastify server instance for the User API.
  * Configures environment variables, security (JWT), database (DynamoDB), and routes.
@@ -58,6 +63,17 @@ export async function buildServer() {
     schema,
     dotenv: true,
   } as FastifyEnvOptions)
+
+  // 1.1 Fetch SNS Topic ARN from AWS Secrets Manager
+  const snsKeys = await getSecret<SNSKeys>(
+    fastify.config.SNS_NAME,
+    fastify.config.AWS_REGION
+  )
+  if (!snsKeys.user_events) {
+    throw new Error('SNS_NAME secret must contain a user_events ARN')
+  }
+  fastify.config.AWS_SNS_TOPIC_ARN = snsKeys.user_events
+  initSNS(snsKeys.user_events)
 
   // 1.5 Swagger Configuration
   await fastify.register(fastifySwagger, {

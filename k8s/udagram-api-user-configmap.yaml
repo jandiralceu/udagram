@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: udagram-api-user-configmap
+  labels:
+    app: udagram
+data:
+  APP_NAME: udagram-user-api
+  NODE_ENV: production
+  PORT: "8080"
+  AWS_REGION: us-east-1
+  AWS_BUCKET: jandir-nanodegree-udagram
+  JWT_SECRET_NAME: prod/jwt/keys
