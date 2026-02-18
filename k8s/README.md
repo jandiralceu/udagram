@@ -1,104 +1,117 @@
-# Udagram Infrastructure - Kubernetes
+# 🎡 Udagram Orchestration - Kubernetes (K8s)
 
-This directory centralizes the Kubernetes (K8s) infrastructure orchestration for the Udagram application. The architecture follows cloud-native principles, ensuring scalability, resilience, and strict separation of concerns across microservices.
+This directory defines the **Infrastructure-as-Code (IaC)** layer for the Udagram platform. It utilizes Kubernetes to orchestrate a distributed system of microservices, ensuring high availability, elastic scaling, and automated lifecycle management.
 
-## 🏗️ Deployment Architecture
+---
 
-The infrastructure is designed using modular components within the `udagram` namespace for isolation.
+## 🏗️ Cloud-Native Architecture
 
-### Service Inventory
+The platform architecture is designed for **High Availability (HA)** and **Fault Tolerance**, leveraging EKS (Elastic Kubernetes Service) features:
 
-| Component         | Manifests                     | Description                                        |
-| :---------------- | :---------------------------- | :------------------------------------------------- |
-| **Namespace**     | `udagram-namespace.yaml`      | Dedicated resource isolation.                      |
-| **Reverse Proxy** | `udagram-reverseproxy-*.yaml` | Nginx gateway for subdomains routing.              |
-| **Frontend**      | `udagram-frontend-*.yaml`     | React application served via Nginx.                |
-| **User API**      | `udagram-api-user-*.yaml`     | Handles authentication and profiles.               |
-| **Feed API**      | `udagram-api-feed-*.yaml`     | Core logic for feed management and media handling. |
+### Orchestration Strategy
 
-### Microservices Specification
+- **Namespace Isolation**: All resources are encapsulated in the `udagram` namespace.
+- **Service Mesh (Simplified)**: Internal communication via ClusterIP and standard DNS discovery.
+- **Edge Layer**: Nginx-based Reverse Proxy acting as an **API Gateway** with ELB (Elastic Load Balancer) integration.
 
-| Service           | Deployment Strategy | Auto-scaling     | Internal DNS                                 |
-| :---------------- | :------------------ | :--------------- | :------------------------------------------- |
-| **Reverse Proxy** | RollingUpdate       | 2 - 5 Pods (HPA) | External Gateway (LoadBalancer)              |
-| **Frontend**      | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-frontend.udagram.svc.cluster.local` |
-| **User API**      | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-api-user.udagram.svc.cluster.local` |
-| **Feed API**      | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-api-feed.udagram.svc.cluster.local` |
+### Service Matrix
 
-## 🔐 Secrets Management (Security Best Practices)
+| Service           | Responsibility        | Type           | Replicas (HPA) | Scaling Metric |
+| :---------------- | :-------------------- | :------------- | :------------- | :------------- |
+| **Reverse Proxy** | API Gateway / Routing | `LoadBalancer` | 2 - 5          | CPU 50%        |
+| **Frontend**      | React SPA Host        | `LoadBalancer` | 2 - 5          | CPU 50%        |
+| **User API**      | Identity & Profiles   | `ClusterIP`    | 2 - 5          | CPU 50%        |
+| **Feed API**      | Content & Media       | `ClusterIP`    | 2 - 5          | CPU 50%        |
 
-In alignment with **DevSecOps** principles, credentials are provisioned manually via CLI to prevent sensitive data from being stored in version control.
+---
 
-### Provisioning Credentials
+## 🔐 Configuration & Secret Management
 
-Execute the following commands to provision secrets for both services:
+We follow a **Hybrid Configuration Pattern** to balance developer velocity with enterprise-grade security.
+
+### 1. Static Configuration (ConfigMaps)
+
+Non-sensitive data (Endpoint URLs, Region names, App metadata) are managed via declarative ConfigMaps:
+
+- `k8s/udagram-api-user-configmap.yaml`
+- `k8s/udagram-api-feed-configmap.yaml`
+
+### 2. Sensitive Data (Manual Secrets)
+
+To prevent **Secret Leakage** in version control, sensitive credentials must be provisioned manually before deployment:
 
 ```bash
-# User API Secrets
+# Provisioning User Service Credentials
 kubectl create secret generic udagram-api-user-secret \
   --namespace udagram \
-  --from-literal=DB_CONNECTION_STRING='<USER_DB_URL>' \
-  --from-literal=AWS_ACCESS_KEY_ID='<AWS_KEY>' \
-  --from-literal=AWS_SECRET_ACCESS_KEY='<AWS_SECRET>'
+  --from-literal=DB_CONNECTION_STRING='<POSTGRES_URL>' \
+  --from-literal=AWS_ACCESS_KEY_ID='<IAM_KEY>' \
+  --from-literal=AWS_SECRET_ACCESS_KEY='<IAM_SECRET>'
 
-# Feed API Secrets
+# Provisioning Feed Service Credentials
 kubectl create secret generic udagram-api-feed-secret \
   --namespace udagram \
-  --from-literal=DB_CONNECTION_STRING='<FEED_DB_URL>' \
-  --from-literal=AWS_ACCESS_KEY_ID='<AWS_KEY>' \
-  --from-literal=AWS_SECRET_ACCESS_KEY='<AWS_SECRET>'
+  --from-literal=DB_CONNECTION_STRING='<POSTGRES_URL>' \
+  --from-literal=AWS_ACCESS_KEY_ID='<IAM_KEY>' \
+  --from-literal=AWS_SECRET_ACCESS_KEY='<IAM_SECRET>'
 ```
 
-## 🚀 Deployment Guide
+> **Note:** Production environments additionally fetch dynamic secrets from **AWS Secrets Manager** at the application layer.
 
-### 1. Initialize Infrastructure
+---
+
+## 🚀 Deployment Orchestration
+
+Deployment follows a specific order to ensure cross-service dependencies are satisfied.
+
+### Step 1: Foundation
 
 ```bash
 kubectl apply -f udagram-namespace.yaml
+kubectl apply -f *-configmap.yaml
 ```
 
-### 2. Configure Environment
+### Step 2: Microservices Layer
+
+Deploy components using the standard **Service -> Deployment -> HPA** pattern:
 
 ```bash
-kubectl apply -f udagram-api-user-configmap.yaml
-kubectl apply -f udagram-api-feed-configmap.yaml
-kubectl apply -f udagram-frontend-configmap.yaml
-```
-
-### 3. Deploy and Scale Services
-
-```bash
-# User Service
-kubectl apply -f udagram-api-user-service.yaml
-kubectl apply -f udagram-api-user-deployment.yaml
-kubectl apply -f udagram-api-user-hpa.yaml
-
-# Feed Service
+# Example: Deploying the Feed Microservice
 kubectl apply -f udagram-api-feed-service.yaml
 kubectl apply -f udagram-api-feed-deployment.yaml
 kubectl apply -f udagram-api-feed-hpa.yaml
-
-# Frontend Service
-kubectl apply -f udagram-frontend-service.yaml
-kubectl apply -f udagram-frontend-deployment.yaml
-kubectl apply -f udagram-frontend-hpa.yaml
-
-# Reverse Proxy (Gateway)
-kubectl apply -f udagram-reverseproxy-service.yaml
-kubectl apply -f udagram-reverseproxy-deployment.yaml
-kubectl apply -f udagram-reverseproxy-hpa.yaml
 ```
 
-### 4. Monitoring & Verification
+### Step 3: Gateway Layer
 
 ```bash
-# Verify deployments and HPA
-kubectl get all -n udagram
-
-# Monitor scaling events
-kubectl get hpa -w -n udagram
+kubectl apply -f udagram-reverseproxy-service.yaml
+kubectl apply -f udagram-reverseproxy-deployment.yaml
 ```
 
 ---
 
-_Note: This architecture demonstrates proficiency in multi-service microservice orchestration, service discovery, and elastic scaling in Kubernetes._
+## 🛠 Operational Excellence
+
+### Resilience Features
+
+- **Liveness Probes**: Automatically restarts containers that enter a deadlock state.
+- **Readiness Probes**: Ensures traffic only flows to Pods that are fully initialized.
+- **Rolling Updates**: Configured for Zero-Downtime deployments (maxSurge: 25%, maxUnavailable: 25%).
+
+### Observability Commands
+
+```bash
+# Check cluster wide status
+kubectl get all -n udagram
+
+# Investigate HPA scaling events
+kubectl describe hpa -n udagram
+
+# View aggregated logs from the gateway
+kubectl logs -f deployment/udagram-reverseproxy -n udagram
+```
+
+---
+
+_This orchestration layer demonstrates advanced proficiency in **Production-Grade Kubernetes**, including Horizontal Pod Autoscaling, Service Discovery, and Decoupled Configuration Management._
