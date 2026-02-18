@@ -51,7 +51,11 @@ We utilize **GitHub Actions** for a robust CI/CD pipeline, handling Linting, Tes
 **Status:** ✅ Implemented
 **Requirement:** Screenshots of kubectl commands show the Frontend and API projects deployed in Kubernetes.
 **Evidence:**
-The following output from `kubectl describe services` confirms the deployment of User API, Feed API, Frontend, and Reverse Proxy.
+The following output from `kubectl get pods` confirms that all microservices (User API, Feed API, Frontend, and Reverse Proxy) are in the **Running** state with appropriate replicas.
+
+![Kubernetes Pods Status](screenshots_and_docs/kubectl_get_pods.png)
+
+The following output from `kubectl describe services` confirms the network deployment of User API, Feed API, Frontend, and Reverse Proxy.
 
 ```text
 Name:                     udagram-api-feed
