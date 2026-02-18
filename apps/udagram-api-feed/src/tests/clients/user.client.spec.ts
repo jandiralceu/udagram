@@ -153,4 +153,41 @@ describe('User Client', () => {
       expect(result).toBe(expectedResponse)
     })
   })
+
+  describe('Proxy behavior', () => {
+    it('should throw if accessed before initialization', async () => {
+      const { userClient } = await import('../../clients/user.client.js')
+      // Ensure it's not initialized (resetModules helps here)
+      expect(() => (userClient as any).getUser).toThrow(
+        'userClient must be initialized with initUserClient() before use.'
+      )
+    })
+
+    it('should proxy property access to internal client', async () => {
+      const { userClient, initUserClient } =
+        await import('../../clients/user.client.js')
+
+      const mockInternalClient = {
+        getUser: vi.fn(),
+        fixedProperty: 'some-value',
+      }
+
+      // Hack to inject internal client for testing proxy
+      // We've mocked createClient to return mockClient (symbol),
+      // we need to return something with properties.
+      const { createClient } = await import('@connectrpc/connect')
+      vi.mocked(createClient).mockReturnValue(
+        mockInternalClient as unknown as any
+      )
+
+      initUserClient(faker.internet.url(), faker.string.uuid())
+
+      expect((userClient as any).fixedProperty).toBe('some-value')
+      expect(typeof (userClient as any).getUser).toBe('function')
+
+      const mockUser = { id: '1' }
+      mockInternalClient.getUser.mockReturnValue(mockUser)
+      expect((userClient as any).getUser()).toBe(mockUser)
+    })
+  })
 })
