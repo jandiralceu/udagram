@@ -1,0 +1,76 @@
+Name:                     udagram-api-feed
+Namespace:                udagram
+Labels:                   app=udagram-api-feed
+Annotations:              <none>
+Selector:                 app=udagram-api-feed
+Type:                     ClusterIP
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.100.202.200
+IPs:                      10.100.202.200
+Port:                     http  8080/TCP
+TargetPort:               8080/TCP
+Endpoints:                172.31.84.80:8080,172.31.84.91:8080
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+
+
+Name:                     udagram-api-user
+Namespace:                udagram
+Labels:                   app=udagram-api-user
+Annotations:              <none>
+Selector:                 app=udagram-api-user
+Type:                     ClusterIP
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.100.163.183
+IPs:                      10.100.163.183
+Port:                     http  8080/TCP
+TargetPort:               8080/TCP
+Endpoints:                172.31.84.82:8080,172.31.84.90:8080
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+
+
+Name:                     udagram-frontend
+Namespace:                udagram
+Labels:                   app=udagram-frontend
+Annotations:              service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+Selector:                 app=udagram-frontend
+Type:                     LoadBalancer
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.100.8.199
+IPs:                      10.100.8.199
+LoadBalancer Ingress:     k8s-udagram-udagramf-e0a4a01604-6bb24d0ff41bd2db.elb.us-east-1.amazonaws.com
+Port:                     http  80/TCP
+TargetPort:               80/TCP
+NodePort:                 http  32501/TCP
+Endpoints:                172.31.84.88:80,172.31.84.89:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+
+
+Name:                     udagram-reverseproxy
+Namespace:                udagram
+Labels:                   app=udagram-reverseproxy
+Annotations:              service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+Selector:                 app=udagram-reverseproxy
+Type:                     LoadBalancer
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.100.3.233
+IPs:                      10.100.3.233
+LoadBalancer Ingress:     k8s-udagram-udagramr-af818a40c0-99e107640e904321.elb.us-east-1.amazonaws.com
+Port:                     http  80/TCP
+TargetPort:               80/TCP
+NodePort:                 http  30443/TCP
+Endpoints:                172.31.84.87:80,172.31.84.85:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Internal Traffic Policy:  Cluster
+Events:                   <none>

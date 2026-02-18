@@ -1,0 +1,303 @@
+{
+  "info": {
+    "_postman_id": "99d6fcdd-7132-435a-8c27-de10dc72d3cc",
+    "name": "Udagram",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "10547318",
+    "_collection_link": "https://go.postman.co/collection/10547318-99d6fcdd-7132-435a-8c27-de10dc72d3cc?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "users",
+      "item": [
+        {
+          "name": "me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://udagramapi.jandir.site/api/v1/users/me",
+              "protocol": "http",
+              "host": ["udagramapi", "jandir", "site"],
+              "path": ["api", "v1", "users", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AddAvatar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "69b5fbe2-605a-42d5-ac5b-59d9b4a8efe3",
+                  "src": "/Users/jandiralceu/Downloads/good-faces-xmSWVeGEnJw-unsplash.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://udagramapi.jandir.site/api/v1/users/avatar",
+              "protocol": "http",
+              "host": ["udagramapi", "jandir", "site"],
+              "path": ["api", "v1", "users", "avatar"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "feeds",
+      "item": [
+        {
+          "name": "getAllPosts",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://udagramapi.jandir.site/api/v1/feeds",
+              "protocol": "http",
+              "host": ["udagramapi", "jandir", "site"],
+              "path": ["api", "v1", "feeds"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "ae7d97d1-383c-40df-a355-2f07929813ab",
+                  "src": "/Users/jandiralceu/Downloads/pexels-detty-image-2148597567-30254254.jpg"
+                },
+                {
+                  "key": "caption",
+                  "value": "Testing before submission",
+                  "type": "text",
+                  "uuid": "2f5d8349-c7da-4bc1-a95e-efc0198b95f2"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://udagramapi.jandir.site/api/v1/feeds",
+              "protocol": "http",
+              "host": ["udagramapi", "jandir", "site"],
+              "path": ["api", "v1", "feeds"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "ae7d97d1-383c-40df-a355-2f07929813ab",
+                  "src": "/Users/jandiralceu/Downloads/615923893_122161479392897589_554708602639681643_n.jpg"
+                },
+                {
+                  "key": "caption",
+                  "value": "My first ever post",
+                  "type": "text",
+                  "uuid": "2f5d8349-c7da-4bc1-a95e-efc0198b95f2"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://udagramapi.jandir.site/api/v1/feeds/99c732ca-fe43-4f29-8464-52d134cfe787",
+              "protocol": "http",
+              "host": ["udagramapi", "jandir", "site"],
+              "path": [
+                "api",
+                "v1",
+                "feeds",
+                "99c732ca-fe43-4f29-8464-52d134cfe787"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "signin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.globals.set(\"ACCESS_TOKEN\", pm.response.json().accessToken);",
+                  "pm.globals.set(\"REFRESH_TOKEN\", pm.response.json().refreshToken);",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"jandiralceu@gmail.com\",\n    \"password\": \"TesteHml1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://udagramapi.jandir.site/api/v1/auth/signin",
+              "protocol": "http",
+              "host": ["udagramapi", "jandir", "site"],
+              "path": ["api", "v1", "auth", "signin"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.globals.set(\"ACCESS_TOKEN\", pm.response.json().accessToken);",
+                  "pm.globals.set(\"REFRESH_TOKEN\", pm.response.json().refreshToken);",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMmZlOTllOS01NjkxLTQ0OTAtOTRhOC1iYjAxZjMyMzE2OTQiLCJpYXQiOjE3NzEzOTQ2NDgsImV4cCI6MTc3MTk5OTQ0OH0.zcvgQ6R8mWwjxHjS-hlxFEOXzYTWzXjaW-1Ua4MTl2X1zUwJMbaFMyxPHMzJsZ6qdiDwUyluXZvnuGx0G4MIYoFnS6yxxnS7srsvGSlHPdPvUU5yMCH52Bl9BWE12GQkTcX-Yb1v-zNpCgKiAS43Fsp5yjxWfIYUwwrEMYHW-f6KWHm0PjrGTDF5c45FLflF1L6AlGHn4fiHc9Y-kHqAQ-JOKeSSxR6565JsrgK17tzT_kltb5g_x8wEQHXXaRQct5ciVfck6ELORi1RghUiJg6tYqYT8jPERkbWDyHC8w7m4SLuZ7fT9YQkVU4cRN9_xbVVOqw7hVEVB5YauthH-A\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://udagramapi.jandir.site/api/v1/auth/refresh",
+              "protocol": "http",
+              "host": ["udagramapi", "jandir", "site"],
+              "path": ["api", "v1", "auth", "refresh"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "signup",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Daiane Cutadiala\",\n    \"email\": \"daianedecastro@gmail.com\",\n    \"password\": \"TesteHml1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://udagramapi.jandir.site/api/v1/auth/signup",
+              "protocol": "http",
+              "host": ["udagramapi", "jandir", "site"],
+              "path": ["api", "v1", "auth", "signup"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

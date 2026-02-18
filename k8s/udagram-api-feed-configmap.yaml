@@ -7,6 +7,7 @@ metadata:
     app: udagram-api-feed
 data:
   APP_NAME: udagram-feed-api
+  NODE_ENV: production
   PORT: "8080"
   USER_SERVICE: http://udagram-api-user:8080
   AWS_REGION: us-east-1
