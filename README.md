@@ -122,5 +122,5 @@ For a detailed breakdown of how this project meets the Cloud Developer Rubric re
 ## 👨‍💻 Author
 
 **Jandir A. Cutabiala**  
-Cloud Developer & Backend Engineer  
+Cloud Developer & Software Engineer  
 [LinkedIn](https://www.linkedin.com/in/jandiralceu/) | [GitHub](https://github.com/jandiralceu)
