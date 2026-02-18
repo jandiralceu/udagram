@@ -13,8 +13,10 @@ COPY apps/udagram-frontend ./apps/udagram-frontend
 # Install dependencies
 RUN npm ci
 
-# Initialize turbo (optional, if needed for complex builds, but we can often just run npm scripts)
 # Build the frontend application
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 # We use --filter to build only the frontend and its dependencies
 RUN npx turbo run build --filter=udagram-frontend
 

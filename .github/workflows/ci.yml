@@ -213,6 +213,8 @@ jobs:
           context: ${{ steps.ctx.outputs.path }}
           file: apps/${{ matrix.app }}/Dockerfile
           push: false
+          build-args: |
+            ${{ matrix.app == 'udagram-frontend' && format('VITE_API_URL={0}', vars.VITE_API_URL) || '' }}
           tags: jandir/${{ matrix.app }}:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

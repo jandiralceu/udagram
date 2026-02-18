@@ -8,18 +8,22 @@ The infrastructure is designed using modular components within the `udagram` nam
 
 ### Service Inventory
 
-| Component     | Manifests                 | Description                                        |
-| :------------ | :------------------------ | :------------------------------------------------- |
-| **Namespace** | `udagram-namespace.yaml`  | Dedicated resource isolation.                      |
-| **User API**  | `udagram-api-user-*.yaml` | Handles authentication and profiles.               |
-| **Feed API**  | `udagram-api-feed-*.yaml` | Core logic for feed management and media handling. |
+| Component         | Manifests                     | Description                                        |
+| :---------------- | :---------------------------- | :------------------------------------------------- |
+| **Namespace**     | `udagram-namespace.yaml`      | Dedicated resource isolation.                      |
+| **Reverse Proxy** | `udagram-reverseproxy-*.yaml` | Nginx gateway for subdomains routing.              |
+| **Frontend**      | `udagram-frontend-*.yaml`     | React application served via Nginx.                |
+| **User API**      | `udagram-api-user-*.yaml`     | Handles authentication and profiles.               |
+| **Feed API**      | `udagram-api-feed-*.yaml`     | Core logic for feed management and media handling. |
 
 ### Microservices Specification
 
-| Service      | Deployment Strategy | Auto-scaling     | Internal DNS                                 |
-| :----------- | :------------------ | :--------------- | :------------------------------------------- |
-| **User API** | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-api-user.udagram.svc.cluster.local` |
-| **Feed API** | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-api-feed.udagram.svc.cluster.local` |
+| Service           | Deployment Strategy | Auto-scaling     | Internal DNS                                 |
+| :---------------- | :------------------ | :--------------- | :------------------------------------------- |
+| **Reverse Proxy** | RollingUpdate       | 2 - 5 Pods (HPA) | External Gateway (LoadBalancer)              |
+| **Frontend**      | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-frontend.udagram.svc.cluster.local` |
+| **User API**      | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-api-user.udagram.svc.cluster.local` |
+| **Feed API**      | RollingUpdate       | 2 - 5 Pods (HPA) | `udagram-api-feed.udagram.svc.cluster.local` |
 
 ## 🔐 Secrets Management (Security Best Practices)
 
@@ -58,6 +62,7 @@ kubectl apply -f udagram-namespace.yaml
 ```bash
 kubectl apply -f udagram-api-user-configmap.yaml
 kubectl apply -f udagram-api-feed-configmap.yaml
+kubectl apply -f udagram-frontend-configmap.yaml
 ```
 
 ### 3. Deploy and Scale Services
@@ -72,6 +77,16 @@ kubectl apply -f udagram-api-user-hpa.yaml
 kubectl apply -f udagram-api-feed-service.yaml
 kubectl apply -f udagram-api-feed-deployment.yaml
 kubectl apply -f udagram-api-feed-hpa.yaml
+
+# Frontend Service
+kubectl apply -f udagram-frontend-service.yaml
+kubectl apply -f udagram-frontend-deployment.yaml
+kubectl apply -f udagram-frontend-hpa.yaml
+
+# Reverse Proxy (Gateway)
+kubectl apply -f udagram-reverseproxy-service.yaml
+kubectl apply -f udagram-reverseproxy-deployment.yaml
+kubectl apply -f udagram-reverseproxy-hpa.yaml
 ```
 
 ### 4. Monitoring & Verification
