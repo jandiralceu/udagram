@@ -6,6 +6,7 @@ import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import fastifyJwt from '@fastify/jwt'
 import fastifyMultipart from '@fastify/multipart'
+import fastifyCors from '@fastify/cors'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import {
@@ -55,6 +56,12 @@ export async function buildServer() {
   const fastify = Fastify({
     logger: logger[process.env.NODE_ENV as keyof typeof logger],
   }).withTypeProvider<ZodTypeProvider>()
+
+  // 0. CORS Configuration
+  await fastify.register(fastifyCors, {
+    origin: '*', // For production, you could restrict to: /\.jandir\.site$/
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  })
 
   // 1. Environment Configuration
   await fastify.register(fastifyEnv, {
