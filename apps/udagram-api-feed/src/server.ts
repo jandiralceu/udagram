@@ -6,6 +6,7 @@ import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import fastifyJwt from '@fastify/jwt'
 import fastifyMultipart from '@fastify/multipart'
+import fastifyCors from '@fastify/cors'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import {
@@ -56,13 +57,19 @@ export async function buildServer() {
     logger: logger[process.env.NODE_ENV as keyof typeof logger],
   }).withTypeProvider<ZodTypeProvider>()
 
-  // 1. Environment Configuration
+  // 1. CORS Configuration
+  await fastify.register(fastifyCors, {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  })
+
+  // 2. Environment Configuration
   await fastify.register(fastifyEnv, {
     schema,
     dotenv: true,
   } as FastifyEnvOptions)
 
-  // 1.5 Swagger Configuration
+  // 3. Swagger Configuration
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
@@ -92,6 +99,7 @@ export async function buildServer() {
     routePrefix: '/docs',
   })
 
+  // 4. API Keys & Clients Initialization
   const apiKeys = await getSecret<APIKeys>(
     fastify.config.API_KEYS_NAME,
     fastify.config.AWS_REGION
@@ -104,7 +112,7 @@ export async function buildServer() {
   fastify.config.USER_SERVICE_API_KEY = apiKeys.feed_service
   initUserClient(fastify.config.USER_SERVICE, apiKeys.feed_service)
 
-  // 2. JWT Verification Setup (Public Key only for Feed API)
+  // 5. JWT Verification Setup (Public Key only for Feed API)
   let jwtPublicKey: string
 
   if (fastify.config.JWT_SECRET_NAME) {
@@ -149,18 +157,18 @@ export async function buildServer() {
     }
   )
 
-  // 3. Storage & Multipart Setup
+  // 6. Storage & Multipart Setup
   await fastify.register(fastifyMultipart, {
     limits: {
       fileSize: 10 * 1024 * 1024, // 10MB limit for feed posts
     },
   })
 
-  // 4. Compilers & Global Settings
+  // 7. Compilers & Global Settings
   fastify.setValidatorCompiler(validatorCompiler)
   fastify.setSerializerCompiler(serializerCompiler)
 
-  // 5. Route Registration
+  // 8. Route Registration
   fastify.get('/health', { schema: { hide: true } }, async () => ({
     app: fastify.config.APP_NAME,
     status: 'healthy',
@@ -168,7 +176,7 @@ export async function buildServer() {
 
   fastify.register(feedRoutes, { prefix: '/api/v1/feeds' })
 
-  // 6. Messaging (SQS) Initialization
+  // 9. Messaging (SQS) Initialization
   const pubSubClient = new PubSubClient(fastify.config.AWS_REGION)
 
   return { fastify, pubSubClient }
@@ -194,7 +202,6 @@ export const startEventPolling = (
 /**
  * Server Execution Block
  */
-/* v8 ignore start */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     const { fastify, pubSubClient } = await buildServer()

@@ -6,6 +6,7 @@ import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
 import fastifyEnv, { type FastifyEnvOptions } from '@fastify/env'
 import fastifyMultipart from '@fastify/multipart'
 import fastifyJwt from '@fastify/jwt'
+import fastifyCors from '@fastify/cors'
 
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
@@ -62,13 +63,19 @@ export async function buildServer() {
     logger: logger[process.env.NODE_ENV as keyof typeof logger],
   }).withTypeProvider<ZodTypeProvider>()
 
-  // 1. Environment Configuration
+  // 1. CORS Configuration
+  await fastify.register(fastifyCors, {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  })
+
+  // 2. Environment Configuration
   await fastify.register(fastifyEnv, {
     schema,
     dotenv: true,
   } as FastifyEnvOptions)
 
-  // 1.5 Swagger Configuration
+  // 3. Swagger Configuration
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
@@ -98,7 +105,7 @@ export async function buildServer() {
     routePrefix: '/docs',
   })
 
-  // 1.1 Fetch SNS Topic ARN from AWS Secrets Manager
+  // 4. Messaging (SNS) Configuration
   const snsKeys = await getSecret<SNSKeys>(
     fastify.config.SNS_NAME,
     fastify.config.AWS_REGION
@@ -109,7 +116,7 @@ export async function buildServer() {
   fastify.config.AWS_SNS_TOPIC_ARN = snsKeys.user_events
   initSNS(snsKeys.user_events)
 
-  // 1.2 Fetch API Keys from AWS Secrets Manager
+  // 5. API Keys Configuration
   const apiKeys = await getSecret<APIKeys>(
     fastify.config.API_KEYS_NAME,
     fastify.config.AWS_REGION
@@ -123,7 +130,7 @@ export async function buildServer() {
   fastify.config.API_KEYS = apiKeysList
   initAPIKeys(apiKeysList)
 
-  // 2. JWT & Security Setup
+  // 6. JWT & Security Setup
   let jwtKeys: JwtKeys
 
   if (fastify.config.JWT_SECRET_NAME) {
@@ -190,7 +197,7 @@ export async function buildServer() {
     }
   )
 
-  // 3. Database & Storage Setup
+  // 7. Database & Storage Setup
   await fastify.register(dynamoPlugin, {
     region: fastify.config.AWS_REGION,
     credentials: {
@@ -205,11 +212,11 @@ export async function buildServer() {
     },
   })
 
-  // 4. Compilers & Global Hooks
+  // 8. Compilers & Global Hooks
   fastify.setValidatorCompiler(validatorCompiler)
   fastify.setSerializerCompiler(serializerCompiler)
 
-  // 5. Route Registration
+  // 9. Route Registration
   fastify.get('/health', { schema: { hide: true } }, async () => ({
     app: fastify.config.APP_NAME,
     status: 'healthy',
