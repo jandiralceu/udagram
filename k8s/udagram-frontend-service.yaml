@@ -5,6 +5,8 @@ metadata:
   namespace: udagram
   labels:
     app: udagram-frontend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
 spec:
   selector:
     app: udagram-frontend

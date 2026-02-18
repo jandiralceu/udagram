@@ -27,6 +27,9 @@ FROM nginx:alpine
 # Standard Vite output directory is dist
 COPY --from=builder /app/apps/udagram-frontend/dist /usr/share/nginx/html
 
+# Copy custom nginx configuration to handle SPA routing
+COPY apps/udagram-frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose port 80
 EXPOSE 80
 
